@@ -890,8 +890,9 @@ const App = (function() {
     return R * c;
   }
 
-  // 💳 REAL PAYMENT & REVENUE GATEWAY (포트원 Store ID: store-855afeeb-7a9a-476d-a44d-9e7d09029ba5)
+  // 💳 REAL PAYMENT & REVENUE GATEWAY (포트원 Store ID & API Secret 설정)
   const PORTONE_STORE_ID = 'store-855afeeb-7a9a-476d-a44d-9e7d09029ba5';
+  const PORTONE_API_SECRET = 'xEBKw9DuuM180nb8NRDq8H4WN0TezD6jgm8VlLAuoFAB5WTDBADwBSYQZOLauJCXAfZhRi5gjkUZpMwO';
   let pendingCheckoutPlan = { name: '', price: 0 };
 
   function openCheckoutModal(planName, price) {
