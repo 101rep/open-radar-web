@@ -10,6 +10,9 @@ const App = (function() {
   let trialExpiry = parseInt(localStorage.getItem('openradar_trial_expiry') || '0', 10);
   let selectedDistrict = localStorage.getItem('openradar_selected_district') || 'ALL';
 
+  let userLocation = null; // { lat, lng }
+  let radiusExpansionNotice = null; // notice text if expanded to 10km or nearest 20
+
   function isTrialActive() {
     return trialExpiry > Date.now();
   }
@@ -54,10 +57,36 @@ const App = (function() {
     // Attach Hangul auto-convert listeners to modal inputs
     setupModalHangulListeners();
 
+    // Automatically request user GPS on launch to center map and sort by distance
+    requestUserLocationOnLaunch();
+
     // Background live cloud sync from GitHub Pages / live cloud json
     syncLiveCloudData();
 
     console.log('OpenRadar App initialized with', businesses.length, 'records');
+  }
+
+  function requestUserLocationOnLaunch() {
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        (pos) => {
+          userLocation = {
+            lat: pos.coords.latitude,
+            lng: pos.coords.longitude
+          };
+          console.log('📍 Initial GPS acquired:', userLocation.lat, userLocation.lng);
+          if (typeof MapModule !== 'undefined' && MapModule.showMyLocation) {
+            MapModule.showMyLocation(userLocation.lat, userLocation.lng);
+          }
+          // Re-apply filters to sort by proximity and calculate distance
+          applyFilters();
+        },
+        (err) => {
+          console.log('Initial GPS silent fallback:', err.message);
+        },
+        { enableHighAccuracy: true, timeout: 10000, maximumAge: 60000 }
+      );
+    }
   }
 
   // Background Cloud Sync for nationwide live licensing
@@ -189,18 +218,11 @@ const App = (function() {
       return;
     }
 
-    currentFiltered = businesses.filter(b => {
-      // District Filter (When ALL, shows nationwide)
-      if (selectedDistrict !== 'ALL') {
-        const road = b.address_road || '';
-        const jibun = b.address_jibun || '';
-        const dist = (b.district || '').toLowerCase();
-        const sel = selectedDistrict.toLowerCase();
-        if (!road.includes(selectedDistrict) && !jibun.includes(selectedDistrict) && !dist.includes(sel)) {
-          return false;
-        }
-      }
+    // Calculate distance and filter with radius expansion
+    const refCoords = getActiveReferenceCoords();
 
+    // 1. First base filter (Text query, Category, D-day, Status)
+    let candidates = businesses.filter(b => {
       // Text query
       if (query) {
         const matchName = (b.business_name || '').toLowerCase().includes(query);
@@ -227,12 +249,87 @@ const App = (function() {
       return true;
     });
 
+    // 2. Compute distance for all candidates
+    candidates.forEach(b => {
+      if (refCoords && b.lat && b.lng) {
+        b.distanceKm = getDistanceKm(refCoords.lat, refCoords.lng, b.lat, b.lng);
+      } else {
+        b.distanceKm = null;
+      }
+    });
+
+    // 3. Proximity / Radius Filter with auto-expansion
+    radiusExpansionNotice = null;
+
+    if (selectedDistrict === 'ALL') {
+      // "전체지역": Sort all candidates by distance from user's GPS
+      if (refCoords) {
+        candidates.sort((a, b) => (a.distanceKm ?? 99999) - (b.distanceKm ?? 99999));
+        // If within 5km, show them; if 0 within 5km, expand to 10km; if still 0, show nearest 30
+        const within5 = candidates.filter(b => b.distanceKm !== null && b.distanceKm <= 5.0);
+        if (within5.length >= 3) {
+          currentFiltered = within5;
+        } else {
+          const within10 = candidates.filter(b => b.distanceKm !== null && b.distanceKm <= 10.0);
+          if (within10.length >= 3) {
+            currentFiltered = within10;
+            radiusExpansionNotice = '📍 내 위치 반경 5km 내 매장이 적어 탐색 반경을 10km로 자동 확장했습니다.';
+          } else {
+            currentFiltered = candidates.slice(0, 30);
+            radiusExpansionNotice = '📍 내 위치 주변 최근 오픈 매장 30곳을 거리순으로 표시합니다.';
+          }
+        }
+      } else {
+        currentFiltered = candidates;
+      }
+    } else {
+      // Selected specific district (e.g. '성동구', '강남구' ...)
+      // Step A: Exact text match in road / jibun / district
+      const exactMatches = candidates.filter(b => {
+        const road = b.address_road || '';
+        const jibun = b.address_jibun || '';
+        const dist = (b.district || '').toLowerCase();
+        const sel = selectedDistrict.toLowerCase();
+        return road.includes(selectedDistrict) || jibun.includes(selectedDistrict) || dist.includes(sel);
+      });
+
+      if (exactMatches.length > 0) {
+        if (refCoords) {
+          exactMatches.sort((a, b) => (a.distanceKm ?? 99999) - (b.distanceKm ?? 99999));
+        }
+        currentFiltered = exactMatches;
+      } else {
+        // Step B: Auto-expansion! If 0 exact match, expand radius from District Center
+        if (refCoords) {
+          candidates.sort((a, b) => (a.distanceKm ?? 99999) - (b.distanceKm ?? 99999));
+          const within5 = candidates.filter(b => b.distanceKm !== null && b.distanceKm <= 5.0);
+          if (within5.length > 0) {
+            currentFiltered = within5;
+            radiusExpansionNotice = `📍 [${selectedDistrict}] 당일 등록 매장이 없어, 주변 5km 인접 매장을 자동 탐색했습니다.`;
+          } else {
+            const within10 = candidates.filter(b => b.distanceKm !== null && b.distanceKm <= 10.0);
+            if (within10.length > 0) {
+              currentFiltered = within10;
+              radiusExpansionNotice = `📍 [${selectedDistrict}] 당일 등록 매장이 없어, 주변 10km 인접 매장을 자동 탐색했습니다.`;
+            } else {
+              currentFiltered = candidates.slice(0, 20);
+              radiusExpansionNotice = `📍 [${selectedDistrict}] 주변 가장 가까운 최근 오픈 매장들을 표시합니다.`;
+            }
+          }
+        } else {
+          currentFiltered = candidates.slice(0, 20);
+        }
+      }
+    }
+
     // Update counts
     const badgeEl = document.getElementById('totalBadge');
     if (badgeEl) badgeEl.textContent = currentFiltered.length;
 
     const listCountLabel = document.getElementById('listCountLabel');
-    if (listCountLabel) listCountLabel.textContent = `조회 결과: 총 ${currentFiltered.length}개사 ${selectedDistrict !== 'ALL' ? '(' + selectedDistrict + ')' : ''}`;
+    if (listCountLabel) {
+      listCountLabel.textContent = `조회 결과: 총 ${currentFiltered.length}개사 ${selectedDistrict !== 'ALL' ? '(' + selectedDistrict + ')' : '(내 위치 기준 거리순)'}`;
+    }
 
     // Render active views
     MapModule.render(currentFiltered);
@@ -241,15 +338,68 @@ const App = (function() {
     updateProUI();
   }
 
+  function getActiveReferenceCoords() {
+    if (selectedDistrict === 'ALL') {
+      if (userLocation && userLocation.lat && userLocation.lng) {
+        return userLocation;
+      }
+      return { lat: 37.5350, lng: 127.0000 }; // Default Seoul center
+    }
+    // District center coordinates lookup
+    const dKey = getDistrictKeyFromName(selectedDistrict);
+    if (dKey && DISTRICT_COORDS[dKey]) {
+      return {
+        lat: DISTRICT_COORDS[dKey].centerLat,
+        lng: DISTRICT_COORDS[dKey].centerLng
+      };
+    }
+    if (userLocation) return userLocation;
+    return { lat: 37.5350, lng: 127.0000 };
+  }
+
+  function getDistrictKeyFromName(distName) {
+    if (!distName) return 'all';
+    if (distName.includes('강남')) return 'gangnam';
+    if (distName.includes('성동') || distName.includes('성수')) return 'seongsu';
+    if (distName.includes('영등포') || distName.includes('여의도')) return 'yeouido';
+    if (distName.includes('마포') || distName.includes('홍대')) return 'hongdae';
+    if (distName.includes('중구') || distName.includes('을지로')) return 'euljiro';
+    if (distName.includes('송파') || distName.includes('잠실')) return 'songpa';
+    if (distName.includes('서초')) return 'seocho';
+    if (distName.includes('남양주')) return 'namyangju';
+    if (distName.includes('구리')) return 'guri';
+    if (distName.includes('화성')) return 'hwaseong';
+    if (distName.includes('분당') || distName.includes('성남') || distName.includes('판교')) return 'bundang';
+    if (distName.includes('수원')) return 'suwon';
+    if (distName.includes('하남')) return 'hanam';
+    if (distName.includes('부천')) return 'bucheon';
+    if (distName.includes('인천')) return 'incheon';
+    if (distName.includes('부산')) return 'busan';
+    if (distName.includes('대구')) return 'daegu';
+    if (distName.includes('대전')) return 'daejeon';
+    if (distName.includes('광주')) return 'gwangju';
+    return 'all';
+  }
+
+  function formatDistance(distKm) {
+    if (distKm === null || distKm === undefined) return '';
+    if (distKm < 1.0) {
+      return `${Math.round(distKm * 1000)}m`;
+    }
+    return `${distKm.toFixed(1)}km`;
+  }
+
   function renderListView() {
     const container = document.getElementById('listContainer');
     if (!container) return;
 
     const sortSelect = document.getElementById('sortSelect');
-    const sort = sortSelect ? sortSelect.value : 'dday_asc';
+    const sort = sortSelect ? sortSelect.value : 'distance_asc';
 
     let list = [...currentFiltered];
-    if (sort === 'dday_asc') {
+    if (sort === 'distance_asc') {
+      list.sort((a, b) => (a.distanceKm ?? 99999) - (b.distanceKm ?? 99999));
+    } else if (sort === 'dday_asc') {
       list.sort((a, b) => a.license_dday - b.license_dday);
     } else if (sort === 'name_asc') {
       list.sort((a, b) => (a.business_name || '').localeCompare(b.business_name || '', 'ko'));
@@ -270,14 +420,28 @@ const App = (function() {
       return;
     }
 
-    container.innerHTML = list.map(b => {
+    let html = '';
+
+    // Show radius expansion banner if triggered
+    if (radiusExpansionNotice) {
+      html += `
+        <div class="radius-expansion-banner">
+          <span class="radius-icon">🧭</span>
+          <div>${radiusExpansionNotice}</div>
+        </div>
+      `;
+    }
+
+    html += list.map(b => {
       const isD0 = b.license_dday === 0;
       const statusClass = getStatusClass(b.sales_status);
+      const distStr = formatDistance(b.distanceKm);
 
       return `
         <div class="biz-card">
           <div class="biz-card-header">
             <div class="biz-badges">
+              ${distStr ? `<span class="badge-distance">📍 ${distStr}</span>` : ''}
               <span class="badge-dday" style="background:${isD0 ? 'rgba(239,68,68,0.25)' : 'rgba(51,65,85,0.4)'}; color:${isD0 ? '#f87171' : '#cbd5e1'}">
                 D-${b.license_dday} ${isD0 ? '오늘등록' : ''}
               </span>
@@ -323,6 +487,8 @@ const App = (function() {
         </div>
       `;
     }).join('');
+
+    container.innerHTML = html;
   }
 
   function getStatusClass(status) {
@@ -1497,6 +1663,7 @@ const App = (function() {
     closeSearchModal,
     handleListSearchInput,
     moveToCurrentLocation,
+    getUserLocation: () => userLocation,
     openCheckoutModal,
     closeCheckoutModal,
     processRealPayment

@@ -416,6 +416,22 @@ const MapModule = (function() {
   }
 
   function resetView() {
+    // If user's GPS location is known, prioritize centering on user's location at zoom level 4
+    if (window.App && typeof window.App.getUserLocation === 'function') {
+      const uLoc = window.App.getUserLocation();
+      if (uLoc && uLoc.lat && uLoc.lng) {
+        if (activeMapType === 'kakao' && kakaoMap) {
+          kakaoMap.setLevel(4, { animate: true });
+          kakaoMap.panTo(new kakao.maps.LatLng(uLoc.lat, uLoc.lng));
+          return;
+        }
+        if (activeMapType === 'leaflet' && leafletMap) {
+          leafletMap.flyTo([uLoc.lat, uLoc.lng], 15, { duration: 0.8 });
+          return;
+        }
+      }
+    }
+
     if (activeMapType === 'kakao' && kakaoMap) {
       kakaoMap.setLevel(11, { animate: true });
       kakaoMap.setCenter(new kakao.maps.LatLng(36.3500, 127.8000));
@@ -440,7 +456,7 @@ const MapModule = (function() {
       if (key === 'all') {
         resetView();
       } else {
-        kakaoMap.setLevel(5, { animate: true });
+        kakaoMap.setLevel(4, { animate: true });
         kakaoMap.panTo(new kakao.maps.LatLng(d.centerLat, d.centerLng));
       }
       return;
