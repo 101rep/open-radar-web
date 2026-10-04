@@ -11,6 +11,8 @@ const App = (function() {
   let selectedDistrict = localStorage.getItem('openradar_selected_district') || 'ALL';
 
   let userLocation = null; // { lat, lng }
+  let mapCenterOverride = null; // { lat, lng } when user moved the map
+  let lastReportedMapInfo = null; // { center, bounds, level }
   let radiusExpansionNotice = null; // notice text if expanded to 10km or nearest 20
 
   function isTrialActive() {
@@ -261,7 +263,25 @@ const App = (function() {
     // 3. Proximity / Radius Filter with auto-expansion
     radiusExpansionNotice = null;
 
-    if (selectedDistrict === 'ALL') {
+    if (mapCenterOverride) {
+      // 🗺️ MAP MOVED/DRAGGED: User moved the map to a specific area (e.g. Incheon, Namyangju)
+      candidates.sort((a, b) => (a.distanceKm ?? 99999) - (b.distanceKm ?? 99999));
+      
+      // First check within 6km of map center
+      const within6 = candidates.filter(b => b.distanceKm !== null && b.distanceKm <= 6.0);
+      if (within6.length >= 2) {
+        currentFiltered = within6;
+      } else {
+        const within15 = candidates.filter(b => b.distanceKm !== null && b.distanceKm <= 15.0);
+        if (within15.length >= 2) {
+          currentFiltered = within15;
+          radiusExpansionNotice = '📍 현재 보고 계신 지도 반경 15km 내 매장을 거리순으로 탐색했습니다.';
+        } else {
+          currentFiltered = candidates.slice(0, 30);
+          radiusExpansionNotice = '📍 현재 지도 화면 주변 인접 매장들을 거리순으로 표시합니다.';
+        }
+      }
+    } else if (selectedDistrict === 'ALL') {
       // "전체지역": Sort all candidates by distance from user's GPS
       if (refCoords) {
         candidates.sort((a, b) => (a.distanceKm ?? 99999) - (b.distanceKm ?? 99999));
@@ -339,6 +359,9 @@ const App = (function() {
   }
 
   function getActiveReferenceCoords() {
+    if (mapCenterOverride && mapCenterOverride.lat && mapCenterOverride.lng) {
+      return mapCenterOverride;
+    }
     if (selectedDistrict === 'ALL') {
       if (userLocation && userLocation.lat && userLocation.lng) {
         return userLocation;
@@ -1080,6 +1103,10 @@ const App = (function() {
         } else {
           showToast(`🎯 [현재 위치 확인 완료]\n현재 내 위치 (${lat.toFixed(4)}, ${lng.toFixed(4)}) 중심으로 이동했습니다.`);
         }
+        // Reset map center override to user's real GPS
+        mapCenterOverride = null;
+        hideMapResearchPill();
+        applyFilters();
       },
       (err) => {
         console.warn('Geolocation error:', err);
@@ -1100,6 +1127,58 @@ const App = (function() {
         maximumAge: 30000
       }
     );
+  }
+
+  // 🔄 MAP MOVE & DYNAMIC RE-SEARCH (화면 이동 시 자동 감지 & 재탐색)
+  function onMapBoundsChanged(mapInfo) {
+    if (!mapInfo || !mapInfo.center) return;
+    lastReportedMapInfo = mapInfo;
+
+    // Show floating pill "이 지역 재검색"
+    showMapResearchPill();
+
+    // Auto re-search if user is in 'ALL' mode or VIP mode
+    // To make it super seamless, we can automatically update candidate stores
+    mapCenterOverride = {
+      lat: mapInfo.center.lat,
+      lng: mapInfo.center.lng
+    };
+
+    applyFilters();
+  }
+
+  function researchCurrentMapArea() {
+    if (!lastReportedMapInfo || !lastReportedMapInfo.center) {
+      if (typeof MapModule !== 'undefined' && MapModule.getMapCenterAndBounds) {
+        lastReportedMapInfo = MapModule.getMapCenterAndBounds();
+      }
+    }
+
+    if (lastReportedMapInfo && lastReportedMapInfo.center) {
+      mapCenterOverride = {
+        lat: lastReportedMapInfo.center.lat,
+        lng: lastReportedMapInfo.center.lng
+      };
+      applyFilters();
+      hideMapResearchPill();
+      showToast(`🎯 현재 지도 중심 기준 (${currentFiltered.length}개 매장) 탐색을 완료했습니다!`);
+    } else {
+      showToast('⚠️ 지도 위치 정보를 확인할 수 없습니다.');
+    }
+  }
+
+  function showMapResearchPill() {
+    const btn = document.getElementById('btnMapResearch');
+    if (btn) {
+      btn.classList.remove('hidden');
+    }
+  }
+
+  function hideMapResearchPill() {
+    const btn = document.getElementById('btnMapResearch');
+    if (btn) {
+      btn.classList.add('hidden');
+    }
   }
 
   // Haversine formula for distance in km
@@ -1678,6 +1757,8 @@ const App = (function() {
     closeSearchModal,
     handleListSearchInput,
     moveToCurrentLocation,
+    onMapBoundsChanged,
+    researchCurrentMapArea,
     getUserLocation: () => userLocation,
     openCheckoutModal,
     closeCheckoutModal,

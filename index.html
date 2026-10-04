@@ -70,6 +70,11 @@
             </button>
           </div>
 
+          <!-- Dynamic "이 지역 재검색" Pill (화면 이동 시 자동 노출 & 클릭 시 즉시 탐색) -->
+          <button id="btnMapResearch" onclick="App.researchCurrentMapArea()" class="map-research-pill hidden" title="현재 보고 계신 지도 화면 주변 매장 재검색">
+            <span>🔄 이 지역 재검색</span>
+          </button>
+
           <!-- Pre-subscription / Pre-trial Radar Blank Overlay -->
           <div id="radarLockOverlay" class="map-radar-blur-overlay hidden">
             <div style="max-width: 340px; background: rgba(18, 18, 22, 0.96); border: 1.5px solid #fee500; border-radius: 18px; padding: 22px 18px; box-shadow: 0 12px 36px rgba(0,0,0,0.8);">

@@ -51,6 +51,11 @@ const MapModule = (function() {
           App.closeQuickCard();
         });
 
+        // 🔄 Leaflet moveend event
+        leafletMap.on('moveend', function() {
+          onMapMovedOrZoomed();
+        });
+
         activeMapType = 'leaflet';
         console.log('Leaflet Map initialized as fallback');
         return;
@@ -82,6 +87,14 @@ const MapModule = (function() {
         App.closeQuickCard();
       });
 
+      // 🔄 Auto-detect Map Pan / Drag and Zoom (화면 이동 시 현재 화면 기준 재탐색)
+      kakao.maps.event.addListener(kakaoMap, 'dragend', function() {
+        onMapMovedOrZoomed();
+      });
+      kakao.maps.event.addListener(kakaoMap, 'zoom_changed', function() {
+        onMapMovedOrZoomed();
+      });
+
       activeMapType = 'kakao';
       updateMapBadgeUI('카카오 지도 (HD)');
       return true;
@@ -89,6 +102,56 @@ const MapModule = (function() {
       console.error('Failed to instantiate Kakao Map:', e);
       return false;
     }
+  }
+
+  let moveDebounceTimer = null;
+
+  function onMapMovedOrZoomed() {
+    if (moveDebounceTimer) clearTimeout(moveDebounceTimer);
+    moveDebounceTimer = setTimeout(() => {
+      if (window.App && typeof window.App.onMapBoundsChanged === 'function') {
+        const info = getMapCenterAndBounds();
+        if (info) {
+          window.App.onMapBoundsChanged(info);
+        }
+      }
+    }, 300);
+  }
+
+  function getMapCenterAndBounds() {
+    if (activeMapType === 'kakao' && kakaoMap) {
+      const center = kakaoMap.getCenter();
+      const bounds = kakaoMap.getBounds();
+      const sw = bounds.getSouthWest();
+      const ne = bounds.getNorthEast();
+      return {
+        center: { lat: center.getLat(), lng: center.getLng() },
+        bounds: {
+          minLat: sw.getLat(),
+          maxLat: ne.getLat(),
+          minLng: sw.getLng(),
+          maxLng: ne.getLng()
+        },
+        level: kakaoMap.getLevel()
+      };
+    }
+
+    if (activeMapType === 'leaflet' && leafletMap) {
+      const center = leafletMap.getCenter();
+      const bounds = leafletMap.getBounds();
+      return {
+        center: { lat: center.lat, lng: center.lng },
+        bounds: {
+          minLat: bounds.getSouth(),
+          maxLat: bounds.getNorth(),
+          minLng: bounds.getWest(),
+          maxLng: bounds.getEast()
+        },
+        level: leafletMap.getZoom()
+      };
+    }
+
+    return null;
   }
 
   function updateMapBadgeUI(label) {
@@ -577,6 +640,7 @@ const MapModule = (function() {
     panTo,
     showMyLocation,
     switchToKakaoMap,
+    getMapCenterAndBounds,
     getActiveMapType: () => activeMapType
   };
 })();
