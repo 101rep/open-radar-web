@@ -22,6 +22,19 @@ const App = (function() {
     console.log('Starting OpenRadar App...');
     businesses = getStoredBusinesses();
 
+    // Recalculate dynamic D-day for all records based on user's current clock
+    const nowTime = new Date();
+    businesses.forEach(b => {
+      if (b.license_date) {
+        const parts = b.license_date.split('-');
+        if (parts.length === 3) {
+          const lDate = new Date(parseInt(parts[0], 10), parseInt(parts[1], 10) - 1, parseInt(parts[2], 10));
+          const diffDays = Math.floor((nowTime.setHours(0,0,0,0) - lDate.getTime()) / (1000 * 60 * 60 * 24));
+          b.license_dday = Math.max(0, diffDays);
+        }
+      }
+    });
+
     // Check master status on load
     if (localStorage.getItem('openradar_is_master_owner') === 'true') {
       isMasterOwner = true;
@@ -41,7 +54,39 @@ const App = (function() {
     // Attach Hangul auto-convert listeners to modal inputs
     setupModalHangulListeners();
 
+    // Background live cloud sync from GitHub Pages / live cloud json
+    syncLiveCloudData();
+
     console.log('OpenRadar App initialized with', businesses.length, 'records');
+  }
+
+  // Background Cloud Sync for nationwide live licensing
+  async function syncLiveCloudData() {
+    try {
+      const liveUrl = 'https://101rep.github.io/open-radar-web/live_businesses.json?t=' + Date.now();
+      const res = await fetch(liveUrl);
+      if (res.ok) {
+        const remoteData = await res.json();
+        if (Array.isArray(remoteData) && remoteData.length > 0) {
+          const existingIds = new Set(businesses.map(b => b.id));
+          let added = 0;
+          remoteData.forEach(item => {
+            if (!existingIds.has(item.id)) {
+              businesses.unshift(item);
+              existingIds.add(item.id);
+              added++;
+            }
+          });
+          if (added > 0) {
+            saveStoredBusinesses(businesses);
+            applyFilters();
+            console.log(`✅ Cloud Live Sync: ${added} new stores loaded into radar.`);
+          }
+        }
+      }
+    } catch (e) {
+      console.log('Offline or cloud sync idle:', e.message);
+    }
   }
 
   function setupModalHangulListeners() {
@@ -844,7 +889,7 @@ const App = (function() {
         }
 
         // 주변 매장 거리 계산 및 안내
-        const nearbyStores = (businessData || []).filter(item => {
+        const nearbyStores = (businesses || []).filter(item => {
           if (!item.lat || !item.lng) return false;
           const distKm = getDistanceKm(lat, lng, item.lat, item.lng);
           return distKm <= 3.0; // 반경 3km 이내
@@ -859,9 +904,9 @@ const App = (function() {
       (err) => {
         console.warn('Geolocation error:', err);
         let msg = '위치 권한을 허용해주세요.';
-        if (err.code === 1) msg = '스마트폰 설정에서 오픈레이더 앱의 위치 권한을 허용해주세요.';
-        else if (err.code === 2) msg = 'GPS 신호를 찾을 수 없습니다. 야외 또는 창가에서 다시 시도해주세요.';
-        else if (err.code === 3) msg = 'GPS 수신 시간이 초과되었습니다.';
+        if (err.code === 1) msg = '스마트폰 설정 > 애플리케이션 > 오픈레이더에서 위치 권한을 [앱 사용 중에만 허용]으로 설정해주세요.';
+        else if (err.code === 2) msg = 'GPS 신호를 수신하는 중입니다. 잠시 후 다시 시도해주세요.';
+        else if (err.code === 3) msg = 'GPS 수신 시간이 초과되었습니다. 실내인 경우 창가나 실외에서 시도해주세요.';
         showToast('⚠️ ' + msg);
 
         // Fallback: Default to central Gangnam
@@ -871,8 +916,8 @@ const App = (function() {
       },
       {
         enableHighAccuracy: true,
-        timeout: 8000,
-        maximumAge: 10000
+        timeout: 15000,
+        maximumAge: 30000
       }
     );
   }
