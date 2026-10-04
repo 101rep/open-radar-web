@@ -1036,6 +1036,20 @@ const App = (function() {
     }
   }
 
+  function removeMasterSecretCode() {
+    isProUser = false;
+    isMasterOwner = false;
+    trialExpiry = 0;
+    localStorage.removeItem('openradar_is_pro');
+    localStorage.removeItem('openradar_is_master_owner');
+    localStorage.removeItem('openradar_trial_expiry');
+    localStorage.removeItem('openradar_plan_name');
+    closeSubscriptionModal();
+    updateProUI();
+    applyFilters();
+    showToast('🔓 [일반 모드 전환]\n마스터 VIP가 해제되어 일반 신규 고객 화면(구독 결제 유도 및 잠금 모드)으로 전환되었습니다.');
+  }
+
   // 🎯 GPS CURRENT LOCATION (내 위치 찾기 및 주변 반경 탐색)
   function moveToCurrentLocation() {
     if (!navigator.geolocation) {
@@ -1629,6 +1643,7 @@ const App = (function() {
     openSubscriptionModal,
     closeSubscriptionModal,
     applyMasterSecretCode,
+    removeMasterSecretCode,
     simulateSubscriptionCheckout,
     sendKakaoNotificationDrawer,
     openHelpModal,
