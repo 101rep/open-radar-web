@@ -932,8 +932,8 @@ const App = (function() {
       }, 1500);
 
     } else if (method === 'bank_wire') {
-      // 2. 무통장 입금 / 즉시 계좌이체 (주식회사 티에이치)
-      const wireInfo = '국민은행 87805-03614 (예금주: 주식회사 티에이치)';
+      // 2. 무통장 입금 / 즉시 계좌이체 (카카오뱅크 정산 계좌)
+      const wireInfo = '카카오뱅크 3333-38-2687130 (예금주: 주식회사 티에이치)';
       if (navigator.clipboard && navigator.clipboard.writeText) {
         navigator.clipboard.writeText(wireInfo);
       }
