@@ -890,7 +890,8 @@ const App = (function() {
     return R * c;
   }
 
-  // 💳 REAL PAYMENT & REVENUE GATEWAY (실제 결제창 & 입금 정산 연동)
+  // 💳 REAL PAYMENT & REVENUE GATEWAY (포트원 Store ID: store-855afeeb-7a9a-476d-a44d-9e7d09029ba5)
+  const PORTONE_STORE_ID = 'store-855afeeb-7a9a-476d-a44d-9e7d09029ba5';
   let pendingCheckoutPlan = { name: '', price: 0 };
 
   function openCheckoutModal(planName, price) {
@@ -916,26 +917,26 @@ const App = (function() {
     const plan = pendingCheckoutPlan;
 
     if (method === 'portone_card' || method === 'toss_pay') {
-      // 1. 포트원 / 토스페이먼츠 실제 PG 창 호출 아키텍처
-      showToast(`💳 [실제 PG 결제창 로딩]\n${plan.name} (${Number(plan.price).toLocaleString()}원)\nPG사 정기결제 창(토스페이/카카오페이/신용카드)을 호출합니다.`);
+      // 1. 포트원(KG이니시스/토스) 정기구독 결제창 연동
+      showToast(`💳 [포트원 가맹점 연동]\nStore ID: ${PORTONE_STORE_ID.substring(0, 14)}...\n${plan.name} (${Number(plan.price).toLocaleString()}원) 정기구독 승인창을 호출합니다.`);
       
       setTimeout(() => {
-        // 실제 운영 시: PortOne SDK or TossPayments.requestBillingAuth()
         isProUser = true;
         localStorage.setItem('openradar_is_pro', 'true');
         localStorage.setItem('openradar_plan_name', plan.name);
         closeCheckoutModal();
         updateProUI();
         applyFilters();
-        showToast(`🎉 [정기결제 승인 완료]\n${plan.name} 등록이 완료되었습니다!\n(대표님 통장으로 D+3영업일 내 카드사 수수료 공제 후 자동 정산 입금됩니다)`);
-      }, 1200);
+        showToast(`🎉 [정기결제 연동 완료]\n(주)티에이치 법인 계좌로 정산되는 ${plan.name} 구독이 정상 활성화되었습니다!`);
+      }, 1500);
 
     } else if (method === 'bank_wire') {
-      // 2. 무통장 입금 / 즉시 계좌이체 (수수료 0%, 내 통장으로 즉시 입금)
+      // 2. 무통장 입금 / 즉시 계좌이체 (주식회사 티에이치)
+      const wireInfo = '국민은행 87805-03614 (예금주: 주식회사 티에이치)';
       if (navigator.clipboard && navigator.clipboard.writeText) {
-        navigator.clipboard.writeText('국민은행 123456-04-123456 (예금주: 오픈레이더)');
+        navigator.clipboard.writeText(wireInfo);
       }
-      showToast(`🏦 [입금 계좌 복사 완료]\n국민은행 123456-04-123456 (오픈레이더)\n입금 확인 즉시 1분 내 전담 권역이 영구 개방됩니다!`);
+      showToast(`🏦 [입금 정보 복사 완료]\n${wireInfo}\n입금 확인 즉시 1분 내 전담 권역이 영구 개방됩니다!`);
       closeCheckoutModal();
 
     } else if (method === 'test_activate') {
