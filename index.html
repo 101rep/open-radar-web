@@ -10,6 +10,9 @@
 
   <!-- Progressive Enhancement: Leaflet CSS (if online) -->
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+
+  <!-- PortOne V2 Official Browser Payment SDK (KG Inicis / Toss / KCP) -->
+  <script src="https://cdn.portone.io/v2/browser-sdk.js"></script>
 </head>
 <body>
   <div class="app-layout">
@@ -38,6 +41,9 @@
         </button>
         <button onclick="App.exportCSV()" class="header-btn" title="엑셀 다운로드">
           <span>📊</span>
+        </button>
+        <button onclick="App.openLegalModal()" class="header-btn" title="사업자정보 & 취소환불규정">
+          <span>🏢</span>
         </button>
         <button onclick="App.openApiSettingsModal()" class="header-btn" title="설정">
           <span>⚙️</span>
@@ -108,6 +114,16 @@
 
           <!-- Quick Preview Card Injected Dynamically -->
           <div id="quickCard" class="quick-card hidden"></div>
+
+          <!-- 🏢 KCP / 전자상거래법 필수 고시 하단 플로팅 바 (심사역 첫 화면 즉시 식별 보장) -->
+          <div class="map-floating-legal-bar">
+            <div class="legal-summary-text">
+              🏢 <strong>주식회사 티에이치</strong> | 대표: 김태훈 | 사업자번호: <strong>878-05-03614</strong> | 통신판매: 제 2026-경기양주-2778 호 | 서비스제공기간: <strong>1개월</strong> | 취소환불/고객센터: <strong>070-8064-0914</strong>
+            </div>
+            <button type="button" onclick="App.openLegalModal()" class="legal-detail-btn">
+              사업자·환불규정 보기
+            </button>
+          </div>
         </div>
       </section>
 
@@ -140,6 +156,23 @@
           </div>
 
           <div id="listContainer"></div>
+
+          <!-- 🏢 KCP 필수 표기사항: 사이트 하단 사업자 정보 및 이용규정 푸터 (Footer) -->
+          <footer class="service-legal-footer" style="margin-top: 28px; margin-bottom: 70px; padding: 18px 14px; background: rgba(15,23,42,0.85); border-radius: 12px; border: 1px solid rgba(51,65,85,0.7); font-size: 11px; color: #64748b; line-height: 1.6;">
+            <div style="font-weight: 800; color: #94a3b8; font-size: 12px; margin-bottom: 6px;">
+              주식회사 티에이치 | 오픈레이더 공식 사업자 정보
+            </div>
+            <div>상호명: <strong>주식회사 티에이치</strong> | 대표자: <strong>김태훈</strong></div>
+            <div>사업자등록번호: <strong>878-05-03614</strong> | 통신판매업신고번호: <strong>제 2026-경기양주-2778 호</strong></div>
+            <div>사업장 소재지: <strong>경기도 양주시 회천중앙로249 106동 2601호</strong></div>
+            <div>고객센터 연락처: <strong>070-8064-0914</strong> | 이메일: <strong>kth.101rep@gmail.com</strong></div>
+            <div>개인정보보호책임자: 김태훈 | PG 전자결제대행사: NHN KCP / 토스페이먼츠</div>
+            <div style="margin-top: 10px; padding-top: 10px; border-top: 1px dashed rgba(51,65,85,0.6); color: #475569; font-size: 10px;">
+              • <strong>서비스 제공 기간:</strong> 결제일로부터 1개월간 (정기구독 시 1개월 단위 자동 갱신)<br/>
+              • <strong>취소 및 환불 안내:</strong> 결제일로부터 7일 이내 데이터 열람 또는 알림톡 발송 이력이 없는 경우 전액 환불 가능하며, 데이터 열람/다운로드 이력 발생 시 전자상거래법 제17조에 따라 환불이 제한되거나 잔여기간 일할 계산 후 환불됩니다. (접수: 고객센터 070-8064-0914 / kth.101rep@gmail.com)<br/>
+              © 2026 주식회사 티에이치 (OpenRadar). All rights reserved.
+            </div>
+          </footer>
         </div>
       </section>
 
@@ -221,6 +254,10 @@
         <span class="nav-tab-icon">💼</span>
         <span class="nav-tab-label">영업CRM</span>
         <div class="nav-active-dot"></div>
+      </button>
+      <button id="navTab_legal" onclick="App.openLegalModal()" class="nav-tab">
+        <span class="nav-tab-icon">🏢</span>
+        <span class="nav-tab-label">사업자·약관</span>
       </button>
     </nav>
 
@@ -495,6 +532,21 @@
               </button>
             </div>
           </div>
+          <!-- ⚖️ KCP 전자상거래법 필수 표기: 취소/환불규정 및 사업자정보 -->
+          <div style="background-color: var(--bg-card); border-radius: 10px; padding: 12px; border: 1px solid var(--border-card); font-size: 11px; line-height: 1.5; color: #94a3b8; margin-top: 8px;">
+            <div style="font-weight: 800; color: #f8fafc; margin-bottom: 4px; display: flex; align-items: center; gap: 4px;">
+              <span>⚖️</span> <span>이용 기간 및 취소·환불 규정 안내</span>
+            </div>
+            <div>• <strong>서비스 제공 기간:</strong> 결제일로부터 1개월간 (정기구독 시 1개월 단위 자동 갱신)</div>
+            <div>• <strong>청약철회 기준:</strong> 결제 후 7일 이내 데이터 열람 및 알림톡 발송 이력이 없는 경우 전액 환불 가능합니다. (열람/다운로드 시 전자상거래법 제17조에 따라 환불 제한 또는 일할 계산)</div>
+            <div>• <strong>취소/환불 문의:</strong> 고객센터 070-8064-0914 / kth.101rep@gmail.com</div>
+          </div>
+
+          <div style="background: rgba(15,23,42,0.6); border-radius: 10px; padding: 10px; border: 1px solid rgba(51,65,85,0.6); font-size: 10px; color: #64748b; line-height: 1.5; margin-top: 6px;">
+            <div>상호명: <strong>주식회사 티에이치</strong> | 대표자: <strong>김태훈</strong> | 사업자등록번호: <strong>878-05-03614</strong></div>
+            <div>통신판매업: <strong>제 2026-경기양주-2778 호</strong> | 주소: <strong>경기도 양주시 회천중앙로249 106동 2601호</strong></div>
+            <div>고객센터: <strong>070-8064-0914</strong> | 이메일: <strong>kth.101rep@gmail.com</strong></div>
+          </div>
         </div>
 
         <div style="display: flex; justify-content: flex-end; gap: 8px; margin-top: 10px;">
@@ -632,6 +684,9 @@
               <div id="checkoutPlanTitle" style="font-size: 16px; font-weight: 800; color: #f8fafc;">지역 독점 라이선스</div>
               <div id="checkoutPlanPrice" style="font-size: 18px; font-weight: 900; color: #38bdf8;">39,000원/월</div>
             </div>
+            <div style="font-size: 11px; font-weight: 700; color: #38bdf8; margin-top: 4px; display: flex; align-items: center; gap: 4px;">
+              <span>📅</span> <span>서비스 제공 기간: 결제일로부터 1개월 (30일 단위 자동 갱신)</span>
+            </div>
             <div style="font-size: 11px; color: #cbd5e1; margin-top: 6px;">
               ✓ 신규 인허가 즉시 0초 실시간 카카오 알림톡 독점 수신<br/>
               ✓ 전담 시·군·구 도로명 상세 주소/연락처 100% 무제한 열람<br/>
@@ -649,7 +704,7 @@
                 <span style="font-size: 20px;">💳</span>
                 <div>
                   <div style="font-weight: 800; color: #38bdf8; font-size: 13px;">신용·체크카드 자동 정기결제</div>
-                  <div style="font-size: 10px; color: #94a3b8;">포트원/토스페이먼츠 보안 PG (매월 자동 갱신)</div>
+                  <div style="font-size: 10px; color: #94a3b8;">포트원/NHN KCP/토스 보안 전자결제 (매월 자동 갱신)</div>
                 </div>
               </div>
               <span style="font-size: 11px; font-weight: 700; color: #38bdf8;">선택 ›</span>
@@ -691,11 +746,109 @@
               </button>
             </div>
           </div>
+
+          <!-- ⚖️ KCP 전자상거래법 필수 표기사항: 취소 및 환불규정 -->
+          <div style="background-color: var(--bg-card); border-radius: 10px; padding: 12px; border: 1px solid var(--border-card); font-size: 11px; line-height: 1.5; color: #94a3b8;">
+            <div style="font-weight: 800; color: #f8fafc; margin-bottom: 6px; display: flex; align-items: center; gap: 4px;">
+              <span>⚖️</span> <span>전자상거래법 취소 및 환불규정</span>
+            </div>
+            <div>• <strong>서비스 제공 기간:</strong> 결제일로부터 1개월간 (정기구독 시 1개월 단위 자동 갱신)</div>
+            <div>• <strong>청약철회(환불) 기준:</strong> 결제일로부터 7일 이내 데이터 열람 또는 알림톡 발송 이력이 없는 경우 전액 환불 가능합니다.</div>
+            <div>• <strong>환불 제한:</strong> 디지털 콘텐츠 및 실시간 정보 서비스 특성상 결제 후 데이터 열람, 엑셀(CSV) 다운로드, 알림톡 수신 이력이 발생한 경우 [전자상거래 등에서의 소비자보호에 관한 법률] 제17조에 따라 청약철회가 제한되거나 이용 일수에 따라 일할 계산 후 차감 환불됩니다.</div>
+            <div>• <strong>취소/환불 접수처:</strong> 고객센터(070-8064-0914) 또는 이메일(kth.101rep@gmail.com)을 통해 요청하시면 확인 즉시 1영업일 내 처리됩니다.</div>
+          </div>
+
+          <!-- 🔒 KG이니시스 전자금융 거래정보 무결성 검증 안내 -->
+          <div style="background: rgba(14,165,233,0.08); border-radius: 8px; padding: 10px 12px; border: 1px solid rgba(14,165,233,0.3); font-size: 10px; color: #38bdf8; display: flex; align-items: center; gap: 8px;">
+            <span style="font-size: 16px;">🛡️</span>
+            <div>
+              <strong>KG이니시스 전자금융 무결성 암호화 적용</strong><br/>
+              <span style="color: #94a3b8;">거래금액 위변조 방지(P_CHKFAKE/SHA-256) 및 피싱 차단 화이트리스트가 가동 중입니다.</span>
+            </div>
+          </div>
+
+          <!-- 🏢 전자상거래법 필수 표기사항: 사업자 정보 (Footer) -->
+          <div style="background: rgba(15,23,42,0.6); border-radius: 10px; padding: 12px; border: 1px solid rgba(51,65,85,0.6); font-size: 10px; color: #64748b; line-height: 1.6;">
+            <div style="font-weight: 800; color: #94a3b8; margin-bottom: 4px;">주식회사 티에이치 사업자 정보</div>
+            <div>상호명: <strong>주식회사 티에이치</strong> | 대표자: <strong>김태훈</strong></div>
+            <div>사업자등록번호: <strong>878-05-03614</strong> | 통신판매업신고번호: <strong>제 2026-경기양주-2778 호</strong></div>
+            <div>사업장 주소: <strong>경기도 양주시 회천중앙로249 106동 2601호</strong></div>
+            <div>고객센터: <strong>070-8064-0914</strong> | 이메일: <strong>kth.101rep@gmail.com</strong></div>
+            <div>개인정보보호책임자: 김태훈 | PG 결제대행: KG이니시스 / 포트원 / 토스페이먼츠 / NHN KCP</div>
+          </div>
         </div>
 
         <div style="display: flex; justify-content: flex-end; gap: 8px; margin-top: 14px;">
           <button onclick="App.closeCheckoutModal()" class="btn-card-action" style="width: 100%; height: 38px; font-size: 12px;">
             닫기
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 🏢 KCP / 전자상거래법 사업자 정보 및 이용규정/취소환불 모달 -->
+    <div id="legalModal" class="modal-backdrop hidden">
+      <div class="modal-sheet" style="max-width: 520px; max-height: 85vh; overflow-y: auto;">
+        <div class="modal-header">
+          <div style="display: flex; align-items: center; gap: 8px;">
+            <span style="font-size: 20px;">🏢</span>
+            <h2 class="modal-title" style="font-size: 16px; font-weight: 800; color: #f8fafc;">사업자 정보 및 전자상거래 이용규정</h2>
+          </div>
+          <button onclick="App.closeLegalModal()" class="close-btn">✕</button>
+        </div>
+
+        <div class="modal-body" style="display: flex; flex-direction: column; gap: 14px; margin-top: 10px;">
+          <!-- 1. 사업자 등록 정보 -->
+          <div style="background-color: var(--bg-card); border-radius: 12px; padding: 14px; border: 1px solid var(--border-card); font-size: 12px; line-height: 1.7; color: #cbd5e1;">
+            <div style="font-weight: 800; color: #38bdf8; font-size: 13px; margin-bottom: 8px; border-bottom: 1px solid rgba(56,189,248,0.3); padding-bottom: 4px;">
+              🏢 주식회사 티에이치 사업자 등록 정보
+            </div>
+            <div>• 상호명: <strong>주식회사 티에이치</strong></div>
+            <div>• 대표자: <strong>김태훈</strong></div>
+            <div>• 사업자등록번호: <strong>878-05-03614</strong></div>
+            <div>• 통신판매업신고번호: <strong>제 2026-경기양주-2778 호</strong></div>
+            <div>• 사업장 소재지: <strong>경기도 양주시 회천중앙로249 106동 2601호</strong></div>
+            <div>• 대표전화 / 고객센터: <strong>070-8064-0914</strong></div>
+            <div>• 공식 이메일: <strong>kth.101rep@gmail.com</strong></div>
+            <div>• 개인정보보호책임자: <strong>김태훈</strong></div>
+            <div>• 전자결제대행사(PG): <strong>NHN KCP / 토스페이먼츠</strong></div>
+          </div>
+
+          <!-- 2. 서비스 제공 기간 -->
+          <div style="background: rgba(16, 185, 129, 0.08); border-radius: 12px; padding: 14px; border: 1px solid rgba(16, 185, 129, 0.3); font-size: 12px; line-height: 1.6; color: #cbd5e1;">
+            <div style="font-weight: 800; color: #34d399; font-size: 13px; margin-bottom: 6px;">
+              ⏱️ 서비스 제공 기간 및 갱신 규정
+            </div>
+            <div>• <strong>서비스 제공 기간: 결제일로부터 1개월간</strong></div>
+            <div style="color: #94a3b8; font-size: 11px; margin-top: 4px;">
+              정기구독 서비스의 경우 이용자가 해지 신청을 하지 않는 한 1개월 단위로 자동 갱신되며, 차기 결제일 전 언제든지 마이페이지 또는 고객센터를 통해 해지 예약하실 수 있습니다.
+            </div>
+          </div>
+
+          <!-- 3. 전자상거래법 취소 및 환불규정 -->
+          <div style="background: rgba(245, 158, 11, 0.08); border-radius: 12px; padding: 14px; border: 1px solid rgba(245, 158, 11, 0.3); font-size: 12px; line-height: 1.6; color: #cbd5e1;">
+            <div style="font-weight: 800; color: #fbbf24; font-size: 13px; margin-bottom: 6px;">
+              ⚖️ 전자상거래법 취소 및 환불규정
+            </div>
+            <div>• <strong>청약철회(전액환불) 기준:</strong> 결제일로부터 7일 이내에 데이터 열람, 엑셀 다운로드, 카카오 알림톡 발송 이력이 없는 경우 100% 전액 환불됩니다.</div>
+            <div style="margin-top: 6px;">• <strong>환불 제한 사유:</strong> 디지털 콘텐츠 및 실시간 상권 데이터 서비스 특성상, 결제 후 데이터 열람 및 다운로드 이력이 발생한 경우 [전자상거래 등에서의 소비자보호에 관한 법률] 제17조 제2항에 따라 청약철회가 제한되며 잔여 이용일수에 따라 일할 계산 후 차감 환불됩니다.</div>
+            <div style="margin-top: 6px;">• <strong>취소/환불 접수처:</strong> 고객센터(070-8064-0914) 또는 이메일(kth.101rep@gmail.com)로 접수 시 1영업일 이내에 신속히 환불 처리됩니다.</div>
+          </div>
+
+          <!-- 4. 약관 및 방침 링크 -->
+          <div style="display: flex; gap: 8px;">
+            <a href="terms.html" target="_blank" class="btn-card-action" style="flex: 1; text-align: center; justify-content: center; text-decoration: none; padding: 10px; font-size: 12px; color: #38bdf8; border: 1px solid rgba(56,189,248,0.4);">
+              📄 서비스 이용약관 전문보기
+            </a>
+            <a href="privacy.html" target="_blank" class="btn-card-action" style="flex: 1; text-align: center; justify-content: center; text-decoration: none; padding: 10px; font-size: 12px; color: #34d399; border: 1px solid rgba(52,211,153,0.4);">
+              🔒 개인정보처리방침 전문보기
+            </a>
+          </div>
+        </div>
+
+        <div style="display: flex; justify-content: flex-end; margin-top: 16px;">
+          <button onclick="App.closeLegalModal()" class="btn-card-action" style="width: 100%; height: 42px; font-size: 13px; font-weight: 800; background: #334155; color: #fff; border: none;">
+            확인 및 닫기
           </button>
         </div>
       </div>
