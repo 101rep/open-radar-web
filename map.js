@@ -162,24 +162,29 @@ const MapModule = (function() {
     }
   }
 
-  // Deduplicate array of business objects by unique ID and unique (name + address)
+  // Deduplicate array of business objects by unique ID, normalized name, and (name + address)
   function deduplicateStoreList(list) {
     if (!Array.isArray(list)) return [];
     const seenIds = new Set();
+    const seenNames = new Set();
     const seenKeys = new Set();
     const result = [];
     list.forEach(b => {
       if (!b) return;
       const id = b.id ? String(b.id).trim() : '';
       const name = (b.business_name || '').trim();
+      const normName = name.replace(/\s+/g, '').toLowerCase();
       const road = (b.address_road || b.address_jibun || '').trim();
-      const normKey = `${name}:::${road}`;
+      const normKey = normName + ':::' + road;
 
       if (id && seenIds.has(id)) return;
-      if (name && road && seenKeys.has(normKey)) return;
+      // In the same coordinate cluster / store picker, never show identical store names
+      if (normName && seenNames.has(normName)) return;
+      if (normKey && seenKeys.has(normKey)) return;
 
       if (id) seenIds.add(id);
-      if (name && road) seenKeys.add(normKey);
+      if (normName) seenNames.add(normName);
+      if (normKey) seenKeys.add(normKey);
       result.push(b);
     });
     return result;

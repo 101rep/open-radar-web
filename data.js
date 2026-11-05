@@ -39158,7 +39158,7 @@ const DISTRICT_COORDS = {
 };
 
 // Storage Key (v4 - Nationwide Full Dataset Refresh)
-const STORAGE_KEY = 'openradar_biz_data_v5';
+const STORAGE_KEY = 'openradar_biz_data_v6';
 
 function getStoredBusinesses() {
   try {

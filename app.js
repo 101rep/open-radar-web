@@ -33,7 +33,7 @@ const App = (function() {
       console.log('🎁 7-Day VIP Free Trial automatically initialized');
     }
 
-  // Strict Business Deduplicator: Strips duplicate records by ID and (Name + Road Address)
+  // Strict Business Deduplicator: Strips duplicate records by ID and (Name + Road Address prefix)
   function deduplicateBusinesses(list) {
     if (!Array.isArray(list)) return [];
     const seenIds = new Set();
@@ -43,14 +43,16 @@ const App = (function() {
       if (!b) return;
       const id = b.id ? String(b.id).trim() : '';
       const name = (b.business_name || '').trim();
+      const normName = name.replace(/\s+/g, '').toLowerCase();
       const road = (b.address_road || b.address_jibun || '').trim();
-      const normKey = `${name}:::${road}`;
+      const roadPrefix = road.split(' ').slice(0, 4).join(' ');
+      const normKey = normName + ':::' + roadPrefix;
 
       if (id && seenIds.has(id)) return;
-      if (name && road && seenKeys.has(normKey)) return;
+      if (normName && roadPrefix && seenKeys.has(normKey)) return;
 
       if (id) seenIds.add(id);
-      if (name && road) seenKeys.add(normKey);
+      if (normName && roadPrefix) seenKeys.add(normKey);
       result.push(b);
     });
     return result;
@@ -155,11 +157,17 @@ const App = (function() {
         const remoteData = await res.json();
         if (Array.isArray(remoteData) && remoteData.length > 0) {
           const existingIds = new Set(businesses.map(b => b.id).filter(Boolean));
-          const existingKeys = new Set(businesses.map(b => `${(b.business_name || '').trim()}:::${(b.address_road || b.address_jibun || '').trim()}`));
+          const existingKeys = new Set(businesses.map(b => {
+            const n = (b.business_name || '').replace(/\s+/g, '').toLowerCase();
+            const r = (b.address_road || b.address_jibun || '').trim().split(' ').slice(0, 4).join(' ');
+            return n + ':::' + r;
+          }));
           let added = 0;
           remoteData.forEach(item => {
             if (!item) return;
-            const normKey = `${(item.business_name || '').trim()}:::${(item.address_road || item.address_jibun || '').trim()}`;
+            const n = (item.business_name || '').replace(/\s+/g, '').toLowerCase();
+            const r = (item.address_road || item.address_jibun || '').trim().split(' ').slice(0, 4).join(' ');
+            const normKey = n + ':::' + r;
             if (!existingIds.has(item.id) && !existingKeys.has(normKey)) {
               businesses.unshift(item);
               existingIds.add(item.id);
@@ -171,7 +179,7 @@ const App = (function() {
             businesses = deduplicateBusinesses(businesses);
             saveStoredBusinesses(businesses);
             applyFilters();
-            console.log(`✅ Cloud Live Sync: ${added} new stores loaded into radar.`);
+            console.log(✅ Cloud Live Sync:  new stores loaded into radar.);
           }
         }
       }
