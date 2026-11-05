@@ -3938,28 +3938,6 @@
     "is_live": true
   },
   {
-    "id": "LIVE-4060000-101-2026-00549",
-    "business_name": "거대한맛 기똥찬 손만두",
-    "category": "일반음식점",
-    "district": "all",
-    "license_date": "2026-10-02",
-    "license_dday": 2,
-    "status": "영업/정상",
-    "address_road": "경기도 파주시 문산읍 임진각로 164, 파주임진각관광지",
-    "address_jibun": "경기도 파주시 문산읍 마정리 1325-5",
-    "lat": 37.889516,
-    "lng": 126.742012,
-    "contact": "연락처 미등록",
-    "sales_status": "미방문",
-    "sales_note": "행정안전부 실시간 인허가 (기타). 영업면적 .00㎡. 신규 개점 준비 현장 방문 및 제안 추천.",
-    "proposal_tags": [
-      "POS/테이블오더",
-      "보안/CCTV/방역"
-    ],
-    "updated_at": "2026-10-03",
-    "is_live": true
-  },
-  {
     "id": "LIVE-4060000-101-2026-00548",
     "business_name": "한국생활개선파주시연합회",
     "category": "일반음식점",
@@ -7502,50 +7480,6 @@
     "is_live": true
   },
   {
-    "id": "LIVE-6520000-101-2026-00361",
-    "business_name": "꿀꿀막창",
-    "category": "일반음식점",
-    "district": "all",
-    "license_date": "2026-10-01",
-    "license_dday": 3,
-    "status": "영업/정상",
-    "address_road": "",
-    "address_jibun": "제주특별자치도 서귀포시 서홍동 707-1",
-    "lat": 33.239753,
-    "lng": 126.55882,
-    "contact": "연락처 미등록",
-    "sales_status": "미방문",
-    "sales_note": "행정안전부 실시간 인허가 (한식). 영업면적 9.00㎡. 신규 개점 준비 현장 방문 및 제안 추천.",
-    "proposal_tags": [
-      "POS/테이블오더",
-      "식자재/원두납품"
-    ],
-    "updated_at": "2026-10-02",
-    "is_live": true
-  },
-  {
-    "id": "LIVE-6520000-101-2026-00360",
-    "business_name": "꿀꿀막창",
-    "category": "일반음식점",
-    "district": "all",
-    "license_date": "2026-10-01",
-    "license_dday": 3,
-    "status": "영업/정상",
-    "address_road": "",
-    "address_jibun": "제주특별자치도 서귀포시 서홍동 707-1",
-    "lat": 33.239753,
-    "lng": 126.55882,
-    "contact": "연락처 미등록",
-    "sales_status": "미방문",
-    "sales_note": "행정안전부 실시간 인허가 (한식). 영업면적 9.00㎡. 신규 개점 준비 현장 방문 및 제안 추천.",
-    "proposal_tags": [
-      "POS/테이블오더",
-      "식자재/원두납품"
-    ],
-    "updated_at": "2026-10-02",
-    "is_live": true
-  },
-  {
     "id": "LIVE-6520000-101-2026-00359",
     "business_name": "배두리광장",
     "category": "일반음식점",
@@ -7569,50 +7503,6 @@
   },
   {
     "id": "LIVE-6520000-101-2026-00358",
-    "business_name": "포차국수실이네1호점",
-    "category": "일반음식점",
-    "district": "all",
-    "license_date": "2026-10-01",
-    "license_dday": 3,
-    "status": "영업/정상",
-    "address_road": "",
-    "address_jibun": "제주특별자치도 서귀포시 서홍동 707-1",
-    "lat": 33.239753,
-    "lng": 126.55882,
-    "contact": "연락처 미등록",
-    "sales_status": "미방문",
-    "sales_note": "행정안전부 실시간 인허가 (한식). 영업면적 9.00㎡. 신규 개점 준비 현장 방문 및 제안 추천.",
-    "proposal_tags": [
-      "POS/테이블오더",
-      "식자재/원두납품"
-    ],
-    "updated_at": "2026-10-02",
-    "is_live": true
-  },
-  {
-    "id": "LIVE-6520000-101-2026-00357",
-    "business_name": "포차국수실이네1호점",
-    "category": "일반음식점",
-    "district": "all",
-    "license_date": "2026-10-01",
-    "license_dday": 3,
-    "status": "영업/정상",
-    "address_road": "",
-    "address_jibun": "제주특별자치도 서귀포시 서홍동 707-1",
-    "lat": 33.239753,
-    "lng": 126.55882,
-    "contact": "연락처 미등록",
-    "sales_status": "미방문",
-    "sales_note": "행정안전부 실시간 인허가 (한식). 영업면적 9.00㎡. 신규 개점 준비 현장 방문 및 제안 추천.",
-    "proposal_tags": [
-      "POS/테이블오더",
-      "식자재/원두납품"
-    ],
-    "updated_at": "2026-10-02",
-    "is_live": true
-  },
-  {
-    "id": "LIVE-6520000-101-2026-00356",
     "business_name": "포차국수실이네1호점",
     "category": "일반음식점",
     "district": "all",
@@ -9760,28 +9650,6 @@
     "contact": "연락처 미등록",
     "sales_status": "미방문",
     "sales_note": "행정안전부 실시간 인허가 (한식). 영업면적 200.00㎡. 신규 개점 준비 현장 방문 및 제안 추천.",
-    "proposal_tags": [
-      "POS/테이블오더",
-      "식자재/원두납품"
-    ],
-    "updated_at": "2026-10-02",
-    "is_live": true
-  },
-  {
-    "id": "LIVE-5100000-101-2026-00059",
-    "business_name": "큰기와집",
-    "category": "일반음식점",
-    "district": "all",
-    "license_date": "2026-10-01",
-    "license_dday": 3,
-    "status": "영업/정상",
-    "address_road": "경상북도 영천시 최무선로 364 (문외동)",
-    "address_jibun": "경상북도 영천시 문외동 317",
-    "lat": 35.969114,
-    "lng": 128.936462,
-    "contact": "연락처 미등록",
-    "sales_status": "미방문",
-    "sales_note": "행정안전부 실시간 인허가 (한식). 영업면적 54.00㎡. 신규 개점 준비 현장 방문 및 제안 추천.",
     "proposal_tags": [
       "POS/테이블오더",
       "식자재/원두납품"
@@ -18260,50 +18128,6 @@
     "is_live": true
   },
   {
-    "id": "LIVE-6520000-101-2026-00354",
-    "business_name": "명가보쌈본점",
-    "category": "일반음식점",
-    "district": "all",
-    "license_date": "2026-09-30",
-    "license_dday": 4,
-    "status": "영업/정상",
-    "address_road": "",
-    "address_jibun": "제주특별자치도 서귀포시 서홍동 707-1",
-    "lat": 33.239753,
-    "lng": 126.55882,
-    "contact": "연락처 미등록",
-    "sales_status": "미방문",
-    "sales_note": "행정안전부 실시간 인허가 (한식). 영업면적 18.00㎡. 신규 개점 준비 현장 방문 및 제안 추천.",
-    "proposal_tags": [
-      "POS/테이블오더",
-      "식자재/원두납품"
-    ],
-    "updated_at": "2026-10-01",
-    "is_live": true
-  },
-  {
-    "id": "LIVE-6520000-101-2026-00353",
-    "business_name": "명가보쌈본점",
-    "category": "일반음식점",
-    "district": "all",
-    "license_date": "2026-09-30",
-    "license_dday": 4,
-    "status": "영업/정상",
-    "address_road": "",
-    "address_jibun": "제주특별자치도 서귀포시 서홍동 707-1",
-    "lat": 33.239753,
-    "lng": 126.55882,
-    "contact": "연락처 미등록",
-    "sales_status": "미방문",
-    "sales_note": "행정안전부 실시간 인허가 (한식). 영업면적 18.00㎡. 신규 개점 준비 현장 방문 및 제안 추천.",
-    "proposal_tags": [
-      "POS/테이블오더",
-      "식자재/원두납품"
-    ],
-    "updated_at": "2026-10-01",
-    "is_live": true
-  },
-  {
     "id": "LIVE-6520000-101-2026-00352",
     "business_name": "설쿰_제주헤리티지카페",
     "category": "일반음식점",
@@ -18362,72 +18186,6 @@
     "contact": "연락처 미등록",
     "sales_status": "미방문",
     "sales_note": "행정안전부 실시간 인허가 (한식). 영업면적 18.00㎡. 신규 개점 준비 현장 방문 및 제안 추천.",
-    "proposal_tags": [
-      "POS/테이블오더",
-      "식자재/원두납품"
-    ],
-    "updated_at": "2026-10-01",
-    "is_live": true
-  },
-  {
-    "id": "LIVE-6520000-101-2026-00349",
-    "business_name": "바람 결",
-    "category": "일반음식점",
-    "district": "all",
-    "license_date": "2026-09-30",
-    "license_dday": 4,
-    "status": "영업/정상",
-    "address_road": "",
-    "address_jibun": "제주특별자치도 서귀포시 서홍동 707-1",
-    "lat": 33.239753,
-    "lng": 126.55882,
-    "contact": "연락처 미등록",
-    "sales_status": "미방문",
-    "sales_note": "행정안전부 실시간 인허가 (한식). 영업면적 18.00㎡. 신규 개점 준비 현장 방문 및 제안 추천.",
-    "proposal_tags": [
-      "POS/테이블오더",
-      "식자재/원두납품"
-    ],
-    "updated_at": "2026-10-01",
-    "is_live": true
-  },
-  {
-    "id": "LIVE-6520000-101-2026-00348",
-    "business_name": "바람 결",
-    "category": "일반음식점",
-    "district": "all",
-    "license_date": "2026-09-30",
-    "license_dday": 4,
-    "status": "영업/정상",
-    "address_road": "",
-    "address_jibun": "제주특별자치도 서귀포시 서홍동 707-1",
-    "lat": 33.239753,
-    "lng": 126.55882,
-    "contact": "연락처 미등록",
-    "sales_status": "미방문",
-    "sales_note": "행정안전부 실시간 인허가 (한식). 영업면적 18.00㎡. 신규 개점 준비 현장 방문 및 제안 추천.",
-    "proposal_tags": [
-      "POS/테이블오더",
-      "식자재/원두납품"
-    ],
-    "updated_at": "2026-10-01",
-    "is_live": true
-  },
-  {
-    "id": "LIVE-6520000-101-2026-00347",
-    "business_name": "설쿰_제주헤리티지카페",
-    "category": "일반음식점",
-    "district": "all",
-    "license_date": "2026-09-30",
-    "license_dday": 4,
-    "status": "영업/정상",
-    "address_road": "",
-    "address_jibun": "제주특별자치도 서귀포시 서홍동 707-1",
-    "lat": 33.239753,
-    "lng": 126.55882,
-    "contact": "연락처 미등록",
-    "sales_status": "미방문",
-    "sales_note": "행정안전부 실시간 인허가 (한식). 영업면적 9.00㎡. 신규 개점 준비 현장 방문 및 제안 추천.",
     "proposal_tags": [
       "POS/테이블오더",
       "식자재/원두납품"
@@ -31548,28 +31306,6 @@
     "is_live": true
   },
   {
-    "id": "LIVE-4060000-101-2026-00538",
-    "business_name": "파주어촌계",
-    "category": "일반음식점",
-    "district": "all",
-    "license_date": "2026-09-29",
-    "license_dday": 5,
-    "status": "영업/정상",
-    "address_road": "경기도 파주시 문산읍 임진각로 164, 파주임진각관광지",
-    "address_jibun": "경기도 파주시 문산읍 마정리 1325-5",
-    "lat": 37.889516,
-    "lng": 126.742012,
-    "contact": "연락처 미등록",
-    "sales_status": "미방문",
-    "sales_note": "행정안전부 실시간 인허가 (기타). 영업면적 .00㎡. 신규 개점 준비 현장 방문 및 제안 추천.",
-    "proposal_tags": [
-      "POS/테이블오더",
-      "보안/CCTV/방역"
-    ],
-    "updated_at": "2026-09-30",
-    "is_live": true
-  },
-  {
     "id": "LIVE-4060000-101-2026-00537",
     "business_name": "임진강물고기(개성인삼)",
     "category": "일반음식점",
@@ -31593,28 +31329,6 @@
   },
   {
     "id": "LIVE-4060000-101-2026-00536",
-    "business_name": "아뜰리에",
-    "category": "일반음식점",
-    "district": "all",
-    "license_date": "2026-09-29",
-    "license_dday": 5,
-    "status": "영업/정상",
-    "address_road": "경기도 파주시 문산읍 임진각로 164, 파주임진각관광지",
-    "address_jibun": "경기도 파주시 문산읍 마정리 1325-5",
-    "lat": 37.889516,
-    "lng": 126.742012,
-    "contact": "연락처 미등록",
-    "sales_status": "미방문",
-    "sales_note": "행정안전부 실시간 인허가 (기타). 영업면적 .00㎡. 신규 개점 준비 현장 방문 및 제안 추천.",
-    "proposal_tags": [
-      "POS/테이블오더",
-      "보안/CCTV/방역"
-    ],
-    "updated_at": "2026-09-30",
-    "is_live": true
-  },
-  {
-    "id": "LIVE-4060000-101-2026-00535",
     "business_name": "아뜰리에",
     "category": "일반음식점",
     "district": "all",

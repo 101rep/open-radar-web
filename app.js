@@ -33,7 +33,30 @@ const App = (function() {
       console.log('🎁 7-Day VIP Free Trial automatically initialized');
     }
 
-    businesses = getStoredBusinesses();
+  // Strict Business Deduplicator: Strips duplicate records by ID and (Name + Road Address)
+  function deduplicateBusinesses(list) {
+    if (!Array.isArray(list)) return [];
+    const seenIds = new Set();
+    const seenKeys = new Set();
+    const result = [];
+    list.forEach(b => {
+      if (!b) return;
+      const id = b.id ? String(b.id).trim() : '';
+      const name = (b.business_name || '').trim();
+      const road = (b.address_road || b.address_jibun || '').trim();
+      const normKey = `${name}:::${road}`;
+
+      if (id && seenIds.has(id)) return;
+      if (name && road && seenKeys.has(normKey)) return;
+
+      if (id) seenIds.add(id);
+      if (name && road) seenKeys.add(normKey);
+      result.push(b);
+    });
+    return result;
+  }
+
+    businesses = deduplicateBusinesses(getStoredBusinesses());
 
     // 🔄 Dynamic Rolling Date Engine:
     // Syncs older DB records to today's real-time clock so fresh D-0/D-3 stores ALWAYS appear!
@@ -123,7 +146,7 @@ const App = (function() {
     }
   }
 
-  // Background Cloud Sync for nationwide live licensing
+  // Background Cloud Sync for nationwide live licensing with strict deduplication
   async function syncLiveCloudData() {
     try {
       const liveUrl = 'https://101rep.github.io/open-radar-web/live_businesses.json?t=' + Date.now();
@@ -131,16 +154,21 @@ const App = (function() {
       if (res.ok) {
         const remoteData = await res.json();
         if (Array.isArray(remoteData) && remoteData.length > 0) {
-          const existingIds = new Set(businesses.map(b => b.id));
+          const existingIds = new Set(businesses.map(b => b.id).filter(Boolean));
+          const existingKeys = new Set(businesses.map(b => `${(b.business_name || '').trim()}:::${(b.address_road || b.address_jibun || '').trim()}`));
           let added = 0;
           remoteData.forEach(item => {
-            if (!existingIds.has(item.id)) {
+            if (!item) return;
+            const normKey = `${(item.business_name || '').trim()}:::${(item.address_road || item.address_jibun || '').trim()}`;
+            if (!existingIds.has(item.id) && !existingKeys.has(normKey)) {
               businesses.unshift(item);
               existingIds.add(item.id);
+              existingKeys.add(normKey);
               added++;
             }
           });
           if (added > 0) {
+            businesses = deduplicateBusinesses(businesses);
             saveStoredBusinesses(businesses);
             applyFilters();
             console.log(`✅ Cloud Live Sync: ${added} new stores loaded into radar.`);

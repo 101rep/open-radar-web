@@ -162,7 +162,48 @@ const MapModule = (function() {
     }
   }
 
-  // Render Pins on Kakao Map
+  // Deduplicate array of business objects by unique ID and unique (name + address)
+  function deduplicateStoreList(list) {
+    if (!Array.isArray(list)) return [];
+    const seenIds = new Set();
+    const seenKeys = new Set();
+    const result = [];
+    list.forEach(b => {
+      if (!b) return;
+      const id = b.id ? String(b.id).trim() : '';
+      const name = (b.business_name || '').trim();
+      const road = (b.address_road || b.address_jibun || '').trim();
+      const normKey = `${name}:::${road}`;
+
+      if (id && seenIds.has(id)) return;
+      if (name && road && seenKeys.has(normKey)) return;
+
+      if (id) seenIds.add(id);
+      if (name && road) seenKeys.add(normKey);
+      result.push(b);
+    });
+    return result;
+  }
+
+  // Group overlapping markers by coordinate key (lat, lng rounded to 5 decimal places (~1m accuracy))
+  function groupBusinessesByCoords(businesses) {
+    const groups = {};
+    businesses.forEach(b => {
+      // 5 decimal places is ~1.1 meters on Earth. If lat/lng are identical or extremely close, group them.
+      const key = `${b.lat.toFixed(5)},${b.lng.toFixed(5)}`;
+      if (!groups[key]) {
+        groups[key] = [];
+      }
+      groups[key].push(b);
+    });
+    // Ensure every group has duplicate stores stripped out
+    Object.keys(groups).forEach(key => {
+      groups[key] = deduplicateStoreList(groups[key]);
+    });
+    return groups;
+  }
+
+  // Render Pins on Kakao Map with Overlap Spiderifier / Multi-Store Picker
   function renderKakaoPins(businesses) {
     if (!kakaoMap) return;
 
@@ -170,41 +211,169 @@ const MapModule = (function() {
     kakaoOverlays.forEach(overlay => overlay.setMap(null));
     kakaoOverlays = [];
 
-    businesses.forEach(b => {
+    const coordGroups = groupBusinessesByCoords(businesses);
+
+    Object.values(coordGroups).forEach(group => {
+      const isMulti = group.length > 1;
+
+      if (!isMulti) {
+        // Single Store Pin
+        const b = group[0];
+        const catInfo = CATEGORY_COLORS[b.category] || { color: '#3b82f6', emoji: '📍' };
+        const isD0 = b.license_dday === 0;
+
+        const content = document.createElement('div');
+        content.className = 'kakao-marker-overlay';
+        content.style.cursor = 'pointer';
+        content.innerHTML = `
+          <div class="custom-pin" style="background-color: ${catInfo.color};">
+            ${isD0 ? '<div class="pulse-ring"></div>' : ''}
+            <span>${catInfo.emoji}</span>
+            <div class="dday-tag" style="background-color: ${isD0 ? '#ef4444' : '#1e293b'}">
+              D-${b.license_dday}
+            </div>
+          </div>
+          <div class="kakao-pin-tooltip">${b.business_name}</div>
+        `;
+
+        content.onclick = (e) => {
+          e.stopPropagation();
+          App.showQuickCard(b);
+        };
+
+        const position = new kakao.maps.LatLng(b.lat, b.lng);
+        const overlay = new kakao.maps.CustomOverlay({
+          position: position,
+          content: content,
+          yAnchor: 1.05,
+          zIndex: isD0 ? 100 : 10
+        });
+
+        overlay.setMap(kakaoMap);
+        kakaoOverlays.push(overlay);
+      } else {
+        // Multi Store Cluster Pin (3~5 stores at same location)
+        const primaryB = group[0];
+        const minDday = Math.min(...group.map(item => item.license_dday));
+        const isD0Group = minDday === 0;
+
+        const content = document.createElement('div');
+        content.className = 'kakao-marker-overlay multi-store-cluster-pin';
+        content.style.cursor = 'pointer';
+        content.innerHTML = `
+          <div class="custom-pin multi-pin" style="background: linear-gradient(135deg, #ec4899, #8b5cf6); border: 2px solid #ffffff;">
+            ${isD0Group ? '<div class="pulse-ring"></div>' : ''}
+            <span style="font-size:12px; font-weight:900;">${group.length}</span>
+            <div class="dday-tag" style="background-color: ${isD0Group ? '#ef4444' : '#8b5cf6'}">
+              D-${minDday}
+            </div>
+          </div>
+          <div class="kakao-pin-tooltip multi-tooltip">
+            🏢 이 건물 ${group.length}개 매장 오픈! (클릭 시 선택)
+          </div>
+        `;
+
+        content.onclick = (e) => {
+          e.stopPropagation();
+          showMultiStorePicker(group, primaryB.lat, primaryB.lng);
+        };
+
+        const position = new kakao.maps.LatLng(primaryB.lat, primaryB.lng);
+        const overlay = new kakao.maps.CustomOverlay({
+          position: position,
+          content: content,
+          yAnchor: 1.05,
+          zIndex: 300 // Higher zIndex so cluster pin is easily tapable
+        });
+
+        overlay.setMap(kakaoMap);
+        kakaoOverlays.push(overlay);
+      }
+    });
+  }
+
+  // Show Multi-Store Selection Modal/Sheet when multiple stores overlap at the exact same location
+  function showMultiStorePicker(storeList, lat, lng) {
+    // 1. Strict deduplication of storeList
+    const uniqueStores = deduplicateStoreList(storeList);
+    if (!uniqueStores || uniqueStores.length === 0) return;
+
+    // If only 1 store remains after deduplication, show quick card directly without popup!
+    if (uniqueStores.length === 1) {
+      App.showQuickCard(uniqueStores[0]);
+      return;
+    }
+
+    let pickerEl = document.getElementById('multiStorePickerModal');
+    if (!pickerEl) {
+      pickerEl = document.createElement('div');
+      pickerEl.id = 'multiStorePickerModal';
+      pickerEl.className = 'multi-store-picker-modal';
+      document.body.appendChild(pickerEl);
+    }
+
+    const firstStore = uniqueStores[0];
+    const roadAddr = firstStore.address_road || firstStore.address_jibun || '동일 건물/위치';
+
+    let listHtml = uniqueStores.map((b, idx) => {
       const catInfo = CATEGORY_COLORS[b.category] || { color: '#3b82f6', emoji: '📍' };
       const isD0 = b.license_dday === 0;
 
-      // Custom Overlay HTML
-      const content = document.createElement('div');
-      content.className = 'kakao-marker-overlay';
-      content.style.cursor = 'pointer';
-      content.innerHTML = `
-        <div class="custom-pin" style="background-color: ${catInfo.color};">
-          ${isD0 ? '<div class="pulse-ring"></div>' : ''}
-          <span>${catInfo.emoji}</span>
-          <div class="dday-tag" style="background-color: ${isD0 ? '#ef4444' : '#1e293b'}">
-            D-${b.license_dday}
+      return `
+        <div class="multi-store-item" onclick="MapModule.selectStoreFromPicker('${b.id}')">
+          <div class="multi-store-item-header">
+            <span class="multi-store-badge" style="background-color: ${catInfo.color};">
+              ${catInfo.emoji} ${b.category}
+            </span>
+            <span class="multi-store-dday" style="background-color: ${isD0 ? '#ef4444' : '#334155'};">
+              D-${b.license_dday} ${isD0 ? '오늘오픈' : ''}
+            </span>
           </div>
+          <div class="multi-store-name">${b.business_name}</div>
+          <div class="multi-store-note">${b.sales_note || b.sales_status || '신규 인허가 매장'}</div>
         </div>
-        <div class="kakao-pin-tooltip">${b.business_name}</div>
       `;
+    }).join('');
 
-      content.onclick = (e) => {
-        e.stopPropagation();
-        App.showQuickCard(b);
-      };
+    pickerEl.innerHTML = `
+      <div class="multi-store-picker-backdrop" onclick="MapModule.closeMultiStorePicker()"></div>
+      <div class="multi-store-picker-content">
+        <div class="multi-store-picker-header">
+          <div class="multi-store-picker-title">
+            <span>🏢</span> 동일 위치 <strong>${uniqueStores.length}개</strong> 매장 선택
+          </div>
+          <button class="multi-store-close-btn" onclick="MapModule.closeMultiStorePicker()">✕</button>
+        </div>
+        <div class="multi-store-picker-subtitle">📍 ${roadAddr}</div>
+        <div class="multi-store-picker-list">
+          ${listHtml}
+        </div>
+      </div>
+    `;
 
-      const position = new kakao.maps.LatLng(b.lat, b.lng);
-      const overlay = new kakao.maps.CustomOverlay({
-        position: position,
-        content: content,
-        yAnchor: 1.05,
-        zIndex: isD0 ? 100 : 10
-      });
+    pickerEl.style.display = 'block';
 
-      overlay.setMap(kakaoMap);
-      kakaoOverlays.push(overlay);
-    });
+    // Slightly zoom in and center map on the location
+    if (activeMapType === 'kakao' && kakaoMap) {
+      if (kakaoMap.getLevel() > 3) {
+        kakaoMap.setLevel(3, { animate: true });
+      }
+      kakaoMap.panTo(new kakao.maps.LatLng(lat, lng));
+    }
+  }
+
+  function closeMultiStorePicker() {
+    const pickerEl = document.getElementById('multiStorePickerModal');
+    if (pickerEl) {
+      pickerEl.style.display = 'none';
+    }
+  }
+
+  function selectStoreFromPicker(storeId) {
+    closeMultiStorePicker();
+    if (window.App && typeof window.App.showQuickCardById === 'function') {
+      window.App.showQuickCardById(storeId);
+    }
   }
 
   // Fallback: Vector Radar Map
@@ -641,6 +810,8 @@ const MapModule = (function() {
     showMyLocation,
     switchToKakaoMap,
     getMapCenterAndBounds,
+    closeMultiStorePicker,
+    selectStoreFromPicker,
     getActiveMapType: () => activeMapType
   };
 })();
