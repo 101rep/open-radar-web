@@ -681,7 +681,9 @@ const MapModule = (function() {
 
   function flyToDistrict(key) {
     currentDistrict = key;
-    const d = DISTRICT_COORDS[key];
+    let d = (typeof OpenRadarConfig !== 'undefined' && OpenRadarConfig.FLAT_DISTRICT_COORDS && OpenRadarConfig.FLAT_DISTRICT_COORDS[key])
+      ? OpenRadarConfig.FLAT_DISTRICT_COORDS[key]
+      : (typeof DISTRICT_COORDS !== 'undefined' ? DISTRICT_COORDS[key] : null);
     if (!d) return;
 
     if (activeMapType === 'kakao' && kakaoMap) {

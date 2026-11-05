@@ -414,9 +414,13 @@ const App = (function() {
       }
       return { lat: 37.5350, lng: 127.0000 }; // Default Seoul center
     }
-    // District center coordinates lookup
+    // District center coordinates lookup with Hierarchical Config support
+    if (typeof OpenRadarConfig !== 'undefined' && OpenRadarConfig.FLAT_DISTRICT_COORDS && OpenRadarConfig.FLAT_DISTRICT_COORDS[selectedDistrict]) {
+      const fc = OpenRadarConfig.FLAT_DISTRICT_COORDS[selectedDistrict];
+      return { lat: fc.centerLat, lng: fc.centerLng };
+    }
     const dKey = getDistrictKeyFromName(selectedDistrict);
-    if (dKey && DISTRICT_COORDS[dKey]) {
+    if (dKey && typeof DISTRICT_COORDS !== 'undefined' && DISTRICT_COORDS[dKey]) {
       return {
         lat: DISTRICT_COORDS[dKey].centerLat,
         lng: DISTRICT_COORDS[dKey].centerLng
@@ -1457,47 +1461,15 @@ const App = (function() {
   function flyToSelectedDistrict(dist) {
     if (!dist || dist === 'ALL') {
       MapModule.flyToDistrict('all');
-    } else if (dist.includes('강남')) {
-      MapModule.flyToDistrict('gangnam');
-    } else if (dist.includes('성동') || dist.includes('성수')) {
-      MapModule.flyToDistrict('seongsu');
-    } else if (dist.includes('영등포') || dist.includes('여의도')) {
-      MapModule.flyToDistrict('yeouido');
-    } else if (dist.includes('마포') || dist.includes('홍대')) {
-      MapModule.flyToDistrict('hongdae');
-    } else if (dist.includes('중구') || dist.includes('을지로')) {
-      MapModule.flyToDistrict('euljiro');
-    } else if (dist.includes('송파') || dist.includes('잠실')) {
-      MapModule.flyToDistrict('songpa');
-    } else if (dist.includes('서초')) {
-      MapModule.flyToDistrict('seocho');
-    } else if (dist.includes('남양주')) {
-      MapModule.flyToDistrict('namyangju');
-    } else if (dist.includes('구리')) {
-      MapModule.flyToDistrict('guri');
-    } else if (dist.includes('화성')) {
-      MapModule.flyToDistrict('hwaseong');
-    } else if (dist.includes('분당') || dist.includes('성남') || dist.includes('판교')) {
-      MapModule.flyToDistrict('bundang');
-    } else if (dist.includes('수원')) {
-      MapModule.flyToDistrict('suwon');
-    } else if (dist.includes('하남')) {
-      MapModule.flyToDistrict('hanam');
-    } else if (dist.includes('부천')) {
-      MapModule.flyToDistrict('bucheon');
-    } else if (dist.includes('인천')) {
-      MapModule.flyToDistrict('incheon');
-    } else if (dist.includes('부산')) {
-      MapModule.flyToDistrict('busan');
-    } else if (dist.includes('대구')) {
-      MapModule.flyToDistrict('daegu');
-    } else if (dist.includes('대전')) {
-      MapModule.flyToDistrict('daejeon');
-    } else if (dist.includes('광주')) {
-      MapModule.flyToDistrict('gwangju');
-    } else {
-      MapModule.flyToDistrict('all');
+      return;
     }
+    // Check if flat district config exists
+    if (typeof OpenRadarConfig !== 'undefined' && OpenRadarConfig.FLAT_DISTRICT_COORDS && OpenRadarConfig.FLAT_DISTRICT_COORDS[dist]) {
+      MapModule.flyToDistrict(dist);
+      return;
+    }
+    const dKey = getDistrictKeyFromName(dist);
+    MapModule.flyToDistrict(dKey || 'all');
   }
 
   function completeKakaoOnboarding() {
@@ -1533,10 +1505,70 @@ const App = (function() {
       : `🎉 [가입 완료] 카카오 7일 무료체험이 시작되었습니다!\n전담 지역 [${district}] 신규 인허가 매장 실시간 레이더 및 알림톡 연동이 가동됩니다.`);
   }
 
-  // 📍 DISTRICT SELECTOR MODAL
+  // 📍 2-STEP HIERARCHICAL DISTRICT SELECTOR MODAL
+  let currentSelectedRegionTab = '경기'; // Default tab on open
+
   function openDistrictSelectModal() {
     const m = document.getElementById('districtModal');
-    if (m) m.classList.remove('hidden');
+    if (!m) return;
+    m.classList.remove('hidden');
+
+    // Auto-detect tab from current selectedDistrict if set
+    if (selectedDistrict && typeof OpenRadarConfig !== 'undefined' && OpenRadarConfig.FLAT_DISTRICT_COORDS) {
+      const match = OpenRadarConfig.FLAT_DISTRICT_COORDS[selectedDistrict];
+      if (match && match.region && match.region !== '전국') {
+        currentSelectedRegionTab = match.region;
+      }
+    }
+    renderRegionTabs();
+    renderSubDistrictGrid(currentSelectedRegionTab);
+  }
+
+  function renderRegionTabs() {
+    const container = document.getElementById('regionTabContainer');
+    if (!container || typeof OpenRadarConfig === 'undefined' || !OpenRadarConfig.REGION_HIERARCHY) return;
+
+    const regions = Object.keys(OpenRadarConfig.REGION_HIERARCHY).filter(r => r !== '전국');
+    container.innerHTML = regions.map(reg => {
+      const isActive = reg === currentSelectedRegionTab;
+      return `
+        <button type="button"
+                onclick="App.switchRegionTab('${reg}')"
+                style="padding: 7px 14px; border-radius: 20px; font-size: 13px; font-weight: ${isActive ? '800' : '600'}; white-space: nowrap; cursor: pointer; transition: all 0.2s ease; border: 1px solid ${isActive ? '#38bdf8' : 'rgba(255,255,255,0.1)'}; background: ${isActive ? 'linear-gradient(135deg, #0284c7, #2563eb)' : 'rgba(15, 23, 42, 0.6)'}; color: ${isActive ? '#ffffff' : '#94a3b8'};">
+          ${reg}
+        </button>
+      `;
+    }).join('');
+  }
+
+  function switchRegionTab(reg) {
+    currentSelectedRegionTab = reg;
+    renderRegionTabs();
+    renderSubDistrictGrid(reg);
+  }
+
+  function renderSubDistrictGrid(reg) {
+    const container = document.getElementById('subDistrictGridContainer');
+    if (!container || typeof OpenRadarConfig === 'undefined' || !OpenRadarConfig.REGION_HIERARCHY) return;
+
+    const regData = OpenRadarConfig.REGION_HIERARCHY[reg];
+    if (!regData || !regData.subDistricts) {
+      container.innerHTML = '<div style="color:#64748b; font-size:12px; grid-column:span 2; text-align:center; padding:20px;">등록된 구역이 없습니다.</div>';
+      return;
+    }
+
+    container.innerHTML = regData.subDistricts.map(sub => {
+      const isSelected = selectedDistrict === sub.name;
+      return `
+        <button type="button"
+                onclick="App.selectDistrict('${sub.name}')"
+                class="btn-card-action"
+                style="padding: 10px 12px; font-size: 12px; font-weight: ${isSelected ? '800' : '600'}; text-align: left; display: flex; align-items: center; justify-content: space-between; border-radius: 8px; border: 1px solid ${isSelected ? '#38bdf8' : 'rgba(255,255,255,0.08)'}; background: ${isSelected ? 'rgba(56, 189, 248, 0.18)' : 'rgba(30, 41, 59, 0.7)'}; color: ${isSelected ? '#38bdf8' : '#e2e8f0'};">
+          <span>📍 ${sub.name}</span>
+          ${isSelected ? '<span style="color:#38bdf8; font-weight:900;">✓</span>' : ''}
+        </button>
+      `;
+    }).join('');
   }
 
   function closeDistrictSelectModal() {
@@ -1890,6 +1922,7 @@ const App = (function() {
     openDistrictSelectModal,
     closeDistrictSelectModal,
     selectDistrict,
+    switchRegionTab,
     isMaster: () => isMasterOwner,
     toggleFireRadar,
     showFireQuickCard,
