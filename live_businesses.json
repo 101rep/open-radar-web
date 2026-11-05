@@ -1,5 +1,71 @@
 [
   {
+    "id": "LIVE-3240000-101-2026-00255",
+    "business_name": "이타다키밥스 강동본점",
+    "category": "일반음식점",
+    "district": "all",
+    "license_date": "2026-11-05",
+    "license_dday": 0,
+    "status": "영업/정상",
+    "address_road": "서울특별시 강동구 양재대로115길 45, 102호 (길동)",
+    "address_jibun": "서울특별시 강동구 길동 381-1",
+    "lat": 37.539264,
+    "lng": 127.137748,
+    "contact": "연락처 미등록",
+    "sales_status": "미방문",
+    "sales_note": "행정안전부/지자체 실시간 인허가. 영업면적 31.88㎡. 신규 개점 준비 현장 방문 및 제안 추천.",
+    "proposal_tags": [
+      "POS/테이블오더",
+      "보안/CCTV/방역"
+    ],
+    "updated_at": "2026-11-05",
+    "is_live": true
+  },
+  {
+    "id": "LIVE-3000000-101-2007-00202",
+    "business_name": "플루토",
+    "category": "일반음식점",
+    "district": "jongno",
+    "license_date": "2026-11-05",
+    "license_dday": 0,
+    "status": "영업/정상",
+    "address_road": "서울특별시 종로구 사직로8길 34 (내수동,경희궁의아침3단지 지하115~119호)",
+    "address_jibun": "서울특별시 종로구 내수동 72 경희궁의아침3단지 지하115~119호",
+    "lat": 37.573587,
+    "lng": 126.972094,
+    "contact": "02-739-3345",
+    "sales_status": "미방문",
+    "sales_note": "행정안전부/지자체 실시간 인허가. 영업면적 85.26㎡. 신규 개점 준비 현장 방문 및 제안 추천.",
+    "proposal_tags": [
+      "POS/테이블오더",
+      "보안/CCTV/방역"
+    ],
+    "updated_at": "2026-11-05",
+    "is_live": true
+  },
+  {
+    "id": "LIVE-3030000-101-1995-02104",
+    "business_name": "무등산",
+    "category": "일반음식점",
+    "district": "seongsu",
+    "license_date": "2026-11-05",
+    "license_dday": 0,
+    "status": "영업/정상",
+    "address_road": "서울특별시 성동구 성덕정길 150 (성수동2가)",
+    "address_jibun": "서울특별시 성동구 성수동2가 209-1",
+    "lat": 37.536316,
+    "lng": 127.059877,
+    "contact": "02-3409-5949",
+    "sales_status": "미방문",
+    "sales_note": "행정안전부/지자체 실시간 인허가. 영업면적 28.00㎡. 신규 개점 준비 현장 방문 및 제안 추천.",
+    "proposal_tags": [
+      "POS/테이블오더",
+      "보안/CCTV/방역"
+    ],
+    "updated_at": "2026-11-05",
+    "is_live": true
+  },
+  {
     "id": "LIVE-6510000-101-2026-00638",
     "business_name": "오물오물",
     "category": "일반음식점",
