@@ -1,0 +1,51 @@
+name: OpenRadar Dual Store Harvest
+
+on:
+  schedule:
+    # UTC 22:30 = 한국시간(KST) 오전 07:30 (1차 모닝 수집)
+    - cron: '30 22 * * *'
+    # UTC 05:00 = 한국시간(KST) 오후 14:00 (2차 스팟 수집)
+    - cron: '0 5 * * *'
+  workflow_dispatch: # 깃허브 웹 화면에서 원클릭 수동 실행 버튼 지원
+
+permissions:
+  contents: write
+
+jobs:
+  harvest-and-sync:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install Dependencies
+        run: |
+          pip install requests pyproj
+
+      - name: Determine Slot and Run Harvester
+        run: |
+          HOUR=$(date -u +%H)
+          if [ "$HOUR" -ge 20 ] || [ "$HOUR" -le 2 ]; then
+            SLOT="morning"
+          else
+            SLOT="afternoon"
+          fi
+          echo "Running harvest for slot: $SLOT"
+          python scripts/harvest_dual.py --slot $SLOT
+
+      - name: Commit and Push Changes
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add live_businesses.json
+          if git diff --staged --quiet; then
+            echo "No changes in live_businesses.json"
+          else
+            git commit -m "chore(auto): dual harvest sync by GitHub Actions [skip ci]"
+            git push
+          fi
