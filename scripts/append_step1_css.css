@@ -1,0 +1,167 @@
+
+/* ==========================================================================
+   🔥 GOLDEN TIME (3-DAY CUTOFF) & 📅 ARCHIVE CALENDAR & 📥 EXCEL EXPORT
+   ========================================================================== */
+.map-pill-goldentime {
+  background: linear-gradient(135deg, rgba(239, 68, 68, 0.28), rgba(245, 158, 11, 0.28)) !important;
+  color: #fef08a !important;
+  border: 1px solid rgba(245, 158, 11, 0.6) !important;
+  font-weight: 800 !important;
+  box-shadow: 0 2px 10px rgba(239, 68, 68, 0.25) !important;
+}
+
+.map-pill-archive {
+  background: rgba(30, 58, 138, 0.35) !important;
+  color: #93c5fd !important;
+  border: 1px solid rgba(59, 130, 246, 0.5) !important;
+  font-weight: 700 !important;
+}
+
+.map-floating-bar {
+  overflow-x: auto !important;
+  -webkit-overflow-scrolling: touch !important;
+  scrollbar-width: none !important;
+  padding-bottom: 4px;
+}
+.map-floating-bar::-webkit-scrollbar {
+  display: none;
+}
+
+/* Golden Time Selection Sheet */
+.goldentime-option {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 16px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 12px;
+  color: #ffffff;
+  font-size: 13px;
+  cursor: pointer;
+  margin-bottom: 8px;
+  transition: all 0.2s ease;
+  text-align: left;
+}
+
+.goldentime-option:hover,
+.goldentime-option.active {
+  background: rgba(245, 158, 11, 0.15);
+  border-color: #f59e0b;
+}
+
+.goldentime-option-title {
+  font-weight: 800;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 14px;
+}
+
+.goldentime-option-desc {
+  font-size: 11px;
+  color: #94a3b8;
+  margin-top: 3px;
+}
+
+/* Date Archive Calendar Modal */
+.archive-date-scroll {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  padding: 6px 2px 12px 2px;
+  scrollbar-width: none;
+  -webkit-overflow-scrolling: touch;
+}
+.archive-date-scroll::-webkit-scrollbar {
+  display: none;
+}
+
+.archive-date-chip {
+  flex-shrink: 0;
+  padding: 8px 14px;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: #cbd5e1;
+  font-size: 12px;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  transition: all 0.2s ease;
+}
+
+.archive-date-chip.active {
+  background: linear-gradient(135deg, rgba(59, 130, 246, 0.3), rgba(37, 99, 235, 0.4));
+  border-color: #38bdf8;
+  color: #ffffff;
+  box-shadow: 0 0 10px rgba(56, 189, 248, 0.3);
+}
+
+.archive-date-count {
+  font-size: 10px;
+  padding: 1px 6px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.12);
+  color: #93c5fd;
+  font-weight: 700;
+}
+
+.archive-date-chip.active .archive-date-count {
+  background: #38bdf8;
+  color: #0f172a;
+}
+
+.archive-store-card {
+  background: #141416;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 12px;
+  padding: 14px;
+  margin-bottom: 10px;
+}
+
+.archive-store-card:hover {
+  border-color: rgba(56, 189, 248, 0.4);
+}
+
+/* Excel Export Option Buttons */
+.export-opt-btn {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 16px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  color: #ffffff;
+  cursor: pointer;
+  margin-bottom: 10px;
+  transition: all 0.2s ease;
+  text-align: left;
+}
+
+.export-opt-btn:hover {
+  background: rgba(16, 185, 129, 0.15);
+  border-color: #10b981;
+}
+
+.export-opt-icon {
+  font-size: 24px;
+  flex-shrink: 0;
+}
+
+.export-opt-title {
+  font-weight: 800;
+  font-size: 14px;
+  color: #f8fafc;
+}
+
+.export-opt-sub {
+  font-size: 11px;
+  color: #94a3b8;
+  margin-top: 2px;
+}
