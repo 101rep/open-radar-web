@@ -1257,3 +1257,168 @@ button:active {
   }
 }
 
+
+
+/* ==========================================================================
+   👑 KING MASTER VIP - LUXURY GOLD THEME (비밀문자 king 발동 모드)
+   ========================================================================== */
+body.theme-gold-master {
+  --brand-blue: #f59e0b;
+  --brand-blue-hover: #d97706;
+}
+
+body.theme-gold-master .app-header {
+  background: linear-gradient(135deg, #1f1704 0%, #3d2b07 50%, #1a1202 100%) !important;
+  border-bottom: 2px solid #f59e0b !important;
+  box-shadow: 0 4px 25px rgba(245, 158, 11, 0.45) !important;
+  transition: all 0.5s ease-in-out;
+}
+
+body.theme-gold-master .brand-title {
+  background: linear-gradient(135deg, #fffbeb 0%, #ffd700 50%, #f59e0b 100%) !important;
+  -webkit-background-clip: text !important;
+  -webkit-text-fill-color: transparent !important;
+  text-shadow: 0 0 16px rgba(255, 215, 0, 0.6) !important;
+  font-weight: 950 !important;
+  letter-spacing: -0.5px;
+}
+
+body.theme-gold-master .brand-icon-insta {
+  filter: drop-shadow(0 0 8px #ffd700);
+  animation: kingCrownPulse 2s infinite ease-in-out;
+}
+
+@keyframes kingCrownPulse {
+  0%, 100% { transform: scale(1); filter: drop-shadow(0 0 6px #ffd700); }
+  50% { transform: scale(1.15) rotate(4deg); filter: drop-shadow(0 0 14px #f59e0b); }
+}
+
+body.theme-gold-master #headerProBadge {
+  background: linear-gradient(90deg, #fef08a 0%, #f59e0b 50%, #d97706 100%) !important;
+  color: #451a03 !important;
+  font-weight: 950 !important;
+  border: 1px solid #ffd700 !important;
+  box-shadow: 0 0 14px rgba(245, 158, 11, 0.85) !important;
+  text-shadow: none !important;
+  padding: 3px 8px !important;
+  border-radius: 999px !important;
+}
+
+body.theme-gold-master .header-btn-vip {
+  background: linear-gradient(135deg, #ffd700, #f59e0b) !important;
+  color: #451a03 !important;
+  border: 1px solid #fffbeb !important;
+  font-weight: 900 !important;
+  box-shadow: 0 0 12px rgba(245, 158, 11, 0.5) !important;
+}
+
+/* Map Floating Pills under Gold Mode */
+body.theme-gold-master .map-pill-primary,
+body.theme-gold-master #btnCurrentDistrict {
+  background: rgba(30, 22, 4, 0.92) !important;
+  border: 1.5px solid #f59e0b !important;
+  color: #fef08a !important;
+  box-shadow: 0 2px 14px rgba(245, 158, 11, 0.35) !important;
+  font-weight: 800 !important;
+}
+
+body.theme-gold-master .map-pill-location {
+  border-color: rgba(245, 158, 11, 0.6) !important;
+  color: #fef08a !important;
+}
+
+body.theme-gold-master .bottom-nav {
+  border-top: 1.5px solid rgba(245, 158, 11, 0.5) !important;
+  background: rgba(14, 11, 3, 0.95) !important;
+}
+
+body.theme-gold-master .nav-tab.active {
+  color: #ffd700 !important;
+}
+
+body.theme-gold-master .nav-tab.active .tab-icon {
+  filter: drop-shadow(0 0 6px rgba(255, 215, 0, 0.6));
+}
+
+/* Fullscreen Gold Flash Animation on Unlock */
+.gold-screen-flash {
+  position: fixed;
+  inset: 0;
+  background: radial-gradient(circle, rgba(255, 215, 0, 0.45) 0%, rgba(245, 158, 11, 0.2) 60%, transparent 100%);
+  pointer-events: none;
+  z-index: 99999;
+  animation: goldFlashAnim 1.2s cubic-bezier(0.1, 0.8, 0.3, 1) forwards;
+}
+
+@keyframes goldFlashAnim {
+  0% { opacity: 0; transform: scale(0.9); }
+  30% { opacity: 1; transform: scale(1.05); }
+  100% { opacity: 0; transform: scale(1.15); }
+}
+
+/* King VIP Celebration Notification Modal */
+.king-celebration-modal {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.82);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 100000;
+  padding: 20px;
+  backdrop-filter: blur(8px);
+  animation: fadeIn 0.3s ease;
+}
+
+.king-celebration-card {
+  width: 100%;
+  max-width: 360px;
+  background: linear-gradient(145deg, #1f1604, #2a1f07);
+  border: 2px solid #ffd700;
+  border-radius: 20px;
+  padding: 26px 20px;
+  text-align: center;
+  box-shadow: 0 20px 50px rgba(245, 158, 11, 0.45), 0 0 30px rgba(255, 215, 0, 0.25);
+}
+
+.king-card-crown {
+  font-size: 52px;
+  line-height: 1;
+  margin-bottom: 12px;
+  filter: drop-shadow(0 0 16px #ffd700);
+  animation: kingCrownPulse 2s infinite ease-in-out;
+}
+
+.king-card-title {
+  font-size: 20px;
+  font-weight: 900;
+  background: linear-gradient(135deg, #fffbeb, #ffd700, #f59e0b);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  margin-bottom: 8px;
+}
+
+.king-card-desc {
+  font-size: 13px;
+  color: #fef08a;
+  line-height: 1.6;
+  margin-bottom: 20px;
+}
+
+.king-card-btn {
+  width: 100%;
+  padding: 13px 18px;
+  background: linear-gradient(90deg, #fef08a, #f59e0b, #d97706);
+  color: #451a03;
+  font-size: 14px;
+  font-weight: 900;
+  border: none;
+  border-radius: 12px;
+  cursor: pointer;
+  box-shadow: 0 4px 15px rgba(245, 158, 11, 0.6);
+  transition: all 0.2s ease;
+}
+
+.king-card-btn:active {
+  transform: scale(0.98);
+}

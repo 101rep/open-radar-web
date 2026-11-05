@@ -20,9 +20,9 @@
     <!-- TOP APP BAR -->
     <!-- TOP APP BAR (Instagram Slim 48px) -->
     <header class="app-header">
-      <div class="brand-section">
-        <span class="brand-icon-insta">📡</span>
-        <h1 class="brand-title">오픈레이더</h1>
+      <div class="brand-section" onclick="App.handleBrandSecretClick()" style="cursor: pointer;" title="오픈레이더 (비밀문자 입력)">
+        <span class="brand-icon-insta" id="headerBrandIcon">📡</span>
+        <h1 class="brand-title" id="headerBrandTitle">오픈레이더</h1>
         <span id="headerProBadge" class="pro-badge">PRO</span>
       </div>
 
@@ -521,7 +521,7 @@
               대표자 인증 마스터 암호를 입력하시면 <strong>전국 250개 시·군·구 평생 VIP 무제한 무료</strong>로 영구 승격됩니다.
             </p>
             <div style="display: flex; gap: 6px;">
-              <input id="inputMasterSecretCode" type="password" placeholder="대표자 마스터 코드 입력 (admin / mungcare)" style="flex: 1; padding: 7px 10px; font-size: 11px;" />
+              <input id="inputMasterSecretCode" type="password" placeholder="비밀문자 입력 (king / admin)" style="flex: 1; padding: 7px 10px; font-size: 11px;" />
               <button onclick="App.applyMasterSecretCode()" class="btn-card-action" style="background: #10b981; color: #fff; font-weight: 800; white-space: nowrap; font-size: 11px;">
                 인증 승격
               </button>
