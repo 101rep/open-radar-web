@@ -2272,6 +2272,400 @@ const App = (function() {
     }, 2200);
   }
 
+
+  // ==========================================================================
+  // 🏛️ 국세청_사업자등록정보 진위확인 및 상태조회 공식 API 모듈
+  // ==========================================================================
+  let lastBulkBizResults = [];
+
+  function openBizStatusModal(prefillNum) {
+    const modal = document.getElementById('bizStatusModal');
+    if (!modal) return;
+    modal.classList.remove('hidden');
+
+    renderBizHistory();
+
+    if (prefillNum) {
+      const input = document.getElementById('inputBizNum');
+      if (input) {
+        input.value = prefillNum;
+        formatBizInput(input);
+        queryBizStatusSingle();
+      }
+    }
+  }
+
+  function closeBizStatusModal() {
+    const modal = document.getElementById('bizStatusModal');
+    if (modal) modal.classList.add('hidden');
+  }
+
+  function switchBizTab(tab) {
+    const btnSingle = document.getElementById('tabBizSingle');
+    const btnBulk = document.getElementById('tabBizBulk');
+    const secSingle = document.getElementById('bizSingleSection');
+    const secBulk = document.getElementById('bizBulkSection');
+
+    if (tab === 'single') {
+      if (btnSingle) btnSingle.classList.add('active');
+      if (btnBulk) btnBulk.classList.remove('active');
+      if (secSingle) secSingle.style.display = 'block';
+      if (secBulk) secBulk.style.display = 'none';
+    } else {
+      if (btnSingle) btnSingle.classList.remove('active');
+      if (btnBulk) btnBulk.classList.add('active');
+      if (secSingle) secSingle.style.display = 'none';
+      if (secBulk) secBulk.style.display = 'block';
+    }
+  }
+
+  function formatBizInput(input) {
+    if (!input) return;
+    let v = input.value.replace(/[^0-9]/g, '').slice(0, 10);
+    if (v.length > 5) {
+      input.value = v.slice(0, 3) + '-' + v.slice(3, 5) + '-' + v.slice(5);
+    } else if (v.length > 3) {
+      input.value = v.slice(0, 3) + '-' + v.slice(3);
+    } else {
+      input.value = v;
+    }
+  }
+
+  function fillBizInput(num) {
+    const input = document.getElementById('inputBizNum');
+    if (input) {
+      input.value = num;
+      queryBizStatusSingle();
+    }
+  }
+
+  function getCleanBizNumber(raw) {
+    return (raw || '').replace(/[^0-9]/g, '');
+  }
+
+  function formatBizNumWithHyphen(raw) {
+    const v = getCleanBizNumber(raw);
+    if (v.length === 10) {
+      return v.slice(0, 3) + '-' + v.slice(3, 5) + '-' + v.slice(5);
+    }
+    return raw;
+  }
+
+  async function queryNtsApi(bizNumbers) {
+    const config = (window.OpenRadarConfig && window.OpenRadarConfig.NTS_API_CONFIG) || {
+      serviceKey: "14130ed23528ed357f222ef5f43b087401ff3e24e4de8f7332c69ae11aeff06e",
+      baseUrl: "https://api.odcloud.kr/api/nts-businessman/v1/status"
+    };
+
+    const cleanList = bizNumbers.map(getCleanBizNumber).filter(n => n.length === 10);
+    if (cleanList.length === 0) {
+      throw new Error("유효한 10자리 사업자등록번호가 없습니다.");
+    }
+
+    const url = `${config.baseUrl}?serviceKey=${encodeURIComponent(config.serviceKey)}`;
+    const response = await fetch(url, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json'
+      },
+      body: JSON.stringify({ b_no: cleanList })
+    });
+
+    if (!response.ok) {
+      throw new Error(`국세청 API 응답 오류 (HTTP ${response.status})`);
+    }
+
+    const data = await response.json();
+    if (!data || !Array.isArray(data.data)) {
+      throw new Error("국세청 데이터 형식 오류");
+    }
+    return data.data;
+  }
+
+  async function queryBizStatusSingle() {
+    const input = document.getElementById('inputBizNum');
+    const resCard = document.getElementById('bizSingleResultCard');
+    if (!input || !resCard) return;
+
+    const raw = input.value.trim();
+    const clean = getCleanBizNumber(raw);
+
+    if (clean.length !== 10) {
+      alert('사업자등록번호 10자리를 정확히 입력해 주세요. (예: 878-05-03614)');
+      input.focus();
+      return;
+    }
+
+    resCard.style.display = 'block';
+    resCard.className = 'biz-status-card biz-status-unknown';
+    resCard.innerHTML = `
+      <div style="display: flex; align-items: center; gap: 8px; color: #38bdf8;">
+        <span style="display: inline-block; animation: spin 1s linear infinite;">⏳</span>
+        <span style="font-size: 13px; font-weight: 700;">국세청 홈택스 실시간 검증 중...</span>
+      </div>
+    `;
+
+    try {
+      const results = await queryNtsApi([clean]);
+      const item = results[0];
+
+      if (!item) {
+        throw new Error("조회 결과가 없습니다.");
+      }
+
+      saveBizHistory(clean, item.b_stt || '확인불가', item.tax_type || '');
+
+      const isRegistered = item.b_stt && item.b_stt !== '';
+      const stt = item.b_stt || '등록 정보 없음';
+      const taxType = item.tax_type || '정보 미제공';
+      const endDt = item.end_dt || '';
+
+      let cardClass = 'biz-status-active';
+      let icon = '🟢';
+      let title = '계속사업자 (정상 영업 중)';
+      let desc = '국세청에 등록되어 현재 정상적으로 세무 신고 및 영업이 이루어지고 있는 사업자입니다.';
+
+      if (stt.includes('폐업')) {
+        cardClass = 'biz-status-closed';
+        icon = '🔴';
+        title = '폐업자 (폐업 완료)';
+        desc = endDt ? `⚠️ 국세청 폐업 신고가 완료된 사업자입니다. (폐업일자: ${endDt.slice(0,4)}년 ${endDt.slice(4,6)}월 ${endDt.slice(6,8)}일)` : '⚠️ 국세청 폐업 신고가 완료된 사업자입니다.';
+      } else if (stt.includes('휴업')) {
+        cardClass = 'biz-status-suspended';
+        icon = '🟡';
+        title = '휴업자 (일시 중단)';
+        desc = '⚠️ 현재 일시적으로 영업을 중단하고 휴업 신고된 사업자입니다.';
+      } else if (!isRegistered || stt.includes('등록되지')) {
+        cardClass = 'biz-status-unknown';
+        icon = '⚪';
+        title = '미등록 / 유효하지 않은 사업자';
+        desc = taxType.includes('등록되지') ? taxType : '국세청에 등록되지 않았거나 번호가 올바르지 않습니다.';
+      }
+
+      const formattedNum = formatBizNumWithHyphen(clean);
+      const copyText = `${formattedNum} | ${title} | ${taxType}${endDt ? ' (폐업일: ' + endDt + ')' : ''}`;
+
+      resCard.className = `biz-status-card ${cardClass}`;
+      resCard.innerHTML = `
+        <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+          <div>
+            <div style="display: flex; align-items: center; gap: 6px;">
+              <span style="font-size: 16px;">${icon}</span>
+              <span style="font-size: 15px; font-weight: 800; color: #fff;">${title}</span>
+            </div>
+            <div style="font-size: 12px; color: #cbd5e1; margin-top: 6px; line-height: 1.4;">
+              ${desc}
+            </div>
+          </div>
+          <button onclick="App.copyBizText('${copyText.replace(/'/g, "\'")}')" class="biz-chip" style="flex-shrink: 0;" title="결과 복사">
+            📋 복사
+          </button>
+        </div>
+
+        <div style="margin-top: 12px; padding-top: 10px; border-top: 1px solid rgba(255,255,255,0.15); display: grid; grid-template-columns: 1fr 1fr; gap: 8px; font-size: 11px;">
+          <div>
+            <span style="color: #94a3b8;">사업자등록번호:</span>
+            <div style="font-weight: 700; color: #fff; font-size: 13px; margin-top: 2px;">${formattedNum}</div>
+          </div>
+          <div>
+            <span style="color: #94a3b8;">과세유형:</span>
+            <div style="font-weight: 700; color: #fef08a; margin-top: 2px;">${taxType}</div>
+          </div>
+          ${endDt ? `
+          <div>
+            <span style="color: #fca5a5;">폐업일자:</span>
+            <div style="font-weight: 800; color: #f87171; margin-top: 2px;">${endDt.slice(0,4)}-${endDt.slice(4,6)}-${endDt.slice(6,8)}</div>
+          </div>
+          ` : ''}
+          <div>
+            <span style="color: #94a3b8;">단위과세여부:</span>
+            <div style="font-weight: 600; color: #cbd5e1; margin-top: 2px;">${item.utcc_yn === 'Y' ? '단위과세자' : '일반'}</div>
+          </div>
+        </div>
+      `;
+
+      renderBizHistory();
+
+    } catch (err) {
+      console.error(err);
+      resCard.className = 'biz-status-card biz-status-closed';
+      resCard.innerHTML = `
+        <div style="font-size: 13px; font-weight: 700; color: #f87171;">
+          ⚠️ 조회 실패: ${err.message || '국세청 서버 통신 에러'}
+        </div>
+        <div style="font-size: 11px; color: #cbd5e1; margin-top: 4px;">
+          입력하신 번호를 확인하시거나 잠시 후 다시 시도해 주세요.
+        </div>
+      `;
+    }
+  }
+
+  function saveBizHistory(num, status, taxType) {
+    try {
+      const KEY = 'openradar_biz_history';
+      let list = JSON.parse(localStorage.getItem(KEY) || '[]');
+      list = list.filter(item => item.num !== num);
+      list.unshift({ num, status, taxType, time: new Date().toLocaleDateString('ko-KR') });
+      list = list.slice(0, 6);
+      localStorage.setItem(KEY, JSON.stringify(list));
+    } catch(e) {}
+  }
+
+  function renderBizHistory() {
+    const container = document.getElementById('bizHistoryList');
+    if (!container) return;
+    try {
+      const KEY = 'openradar_biz_history';
+      const list = JSON.parse(localStorage.getItem(KEY) || '[]');
+      if (list.length === 0) {
+        container.innerHTML = '<span style="font-size: 11px; color: #64748b;">최근 조회한 기록이 없습니다.</span>';
+        return;
+      }
+      container.innerHTML = list.map(item => {
+        const isClosed = item.status && item.status.includes('폐업');
+        const badgeColor = isClosed ? '#f87171' : '#34d399';
+        const formatted = formatBizNumWithHyphen(item.num);
+        return `
+          <span class="biz-chip" onclick="App.fillBizInput('${formatted}')" style="display: inline-flex; align-items: center; gap: 4px;">
+            <span style="color: ${badgeColor}; font-weight: 800;">${isClosed ? '폐업' : '정상'}</span>
+            <span>${formatted}</span>
+          </span>
+        `;
+      }).join('');
+    } catch(e) {}
+  }
+
+  function clearBizHistory() {
+    try {
+      localStorage.removeItem('openradar_biz_history');
+      renderBizHistory();
+    } catch(e) {}
+  }
+
+  function copyBizText(text) {
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text);
+      alert('조회 결과가 클립보드에 복사되었습니다!\n\n' + text);
+    } else {
+      prompt('결과를 복사하세요:', text);
+    }
+  }
+
+  function fillBulkExample() {
+    const area = document.getElementById('inputBizBulkText');
+    if (!area) return;
+    area.value = "878-05-03614\n124-81-00998\n101-81-00000";
+  }
+
+  async function queryBizStatusBulk() {
+    const area = document.getElementById('inputBizBulkText');
+    const container = document.getElementById('bizBulkResultContainer');
+    const summary = document.getElementById('bizBulkSummaryText');
+    const tbody = document.getElementById('bizBulkTableBody');
+    if (!area || !container || !tbody) return;
+
+    const raw = area.value;
+    const lines = raw.split(/[\n,;]+/).map(s => getCleanBizNumber(s)).filter(s => s.length === 10);
+    const uniqueNums = Array.from(new Set(lines)).slice(0, 100);
+
+    if (uniqueNums.length === 0) {
+      alert('유효한 10자리 사업자등록번호를 최소 1개 이상 입력해 주세요.');
+      area.focus();
+      return;
+    }
+
+    container.style.display = 'block';
+    if (summary) summary.textContent = `국세청 실시간 대량 조회 중... (${uniqueNums.length}건)`;
+    tbody.innerHTML = `<tr><td colspan="4" style="text-align: center; color: #38bdf8; padding: 20px;">국세청 홈택스 서버와 실시간 통신 중입니다...</td></tr>`;
+
+    try {
+      const results = await queryNtsApi(uniqueNums);
+      lastBulkBizResults = results;
+
+      let activeCount = 0;
+      let closedCount = 0;
+      let suspendedCount = 0;
+
+      tbody.innerHTML = results.map(item => {
+        const stt = item.b_stt || '미등록';
+        const formatted = formatBizNumWithHyphen(item.b_no);
+        let sttBadge = `<span style="color: #34d399; font-weight: 700;">🟢 계속(정상)</span>`;
+
+        if (stt.includes('폐업')) {
+          closedCount++;
+          sttBadge = `<span style="color: #f87171; font-weight: 800;">🔴 폐업자</span>`;
+        } else if (stt.includes('휴업')) {
+          suspendedCount++;
+          sttBadge = `<span style="color: #fbbf24; font-weight: 700;">🟡 휴업자</span>`;
+        } else if (stt.includes('계속')) {
+          activeCount++;
+        } else {
+          sttBadge = `<span style="color: #94a3b8;">⚪ ${stt}</span>`;
+        }
+
+        const endDt = item.end_dt ? `${item.end_dt.slice(0,4)}-${item.end_dt.slice(4,6)}-${item.end_dt.slice(6,8)}` : '-';
+
+        return `
+          <tr>
+            <td style="font-weight: 700; font-family: monospace;">${formatted}</td>
+            <td>${sttBadge}</td>
+            <td style="color: #cbd5e1;">${item.tax_type || '-'}</td>
+            <td style="color: #f87171;">${endDt}</td>
+          </tr>
+        `;
+      }).join('');
+
+      if (summary) {
+        summary.innerHTML = `총 <strong style="color: #fff;">${results.length}</strong>건 조회 완료 (정상: <strong style="color: #34d399;">${activeCount}</strong>, 폐업: <strong style="color: #f87171;">${closedCount}</strong>, 휴업: <strong style="color: #fbbf24;">${suspendedCount}</strong>)`;
+      }
+
+    } catch (err) {
+      console.error(err);
+      tbody.innerHTML = `<tr><td colspan="4" style="color: #f87171; text-align: center; padding: 20px;">조회 실패: ${err.message}</td></tr>`;
+    }
+  }
+
+  function exportBulkBizResultCSV() {
+    if (!lastBulkBizResults || lastBulkBizResults.length === 0) {
+      alert('저장할 대량 조회 결과가 없습니다.');
+      return;
+    }
+
+    const headers = ['사업자등록번호', '납세자상태', '과세유형', '폐업일자', '단위과세여부'];
+    const rows = lastBulkBizResults.map(item => {
+      const formatted = formatBizNumWithHyphen(item.b_no);
+      const stt = item.b_stt || '';
+      const tax = item.tax_type || '';
+      const end = item.end_dt || '';
+      const utcc = item.utcc_yn || 'N';
+      return [formatted, stt, tax, end, utcc].map(v => `"${(v + '').replace(/"/g, '""')}"`).join(',');
+    });
+
+    const csvContent = '\uFEFF' + [headers.join(','), ...rows].join('\r\n');
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `국세청_사업자_폐업상태_조회결과_${new Date().toISOString().slice(0,10)}.csv`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  }
+
+  function checkCurrentStoreBizStatus() {
+    if (!selectedBusiness) {
+      openBizStatusModal();
+      return;
+    }
+
+    const promptNum = prompt(`[${selectedBusiness.business_name}] 매장의 사업자등록번호 10자리를 입력하시면 국세청 실시간 계속/폐업 여부를 조회합니다:`, '');
+    if (!promptNum) return;
+
+    openBizStatusModal(promptNum);
+  }
+
   return {
     init,
     applyFilters,
@@ -2312,6 +2706,18 @@ const App = (function() {
     openExportModal,
     closeExportModal,
     downloadExcelByScope,
+    openBizStatusModal,
+    closeBizStatusModal,
+    switchBizTab,
+    formatBizInput,
+    fillBizInput,
+    queryBizStatusSingle,
+    clearBizHistory,
+    copyBizText,
+    fillBulkExample,
+    queryBizStatusBulk,
+    exportBulkBizResultCSV,
+    checkCurrentStoreBizStatus,
     checkAndApplySecretCode,
     activateKingMasterMode,
     handleBrandSecretClick,

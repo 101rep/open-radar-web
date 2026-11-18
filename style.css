@@ -1589,3 +1589,166 @@ body.theme-gold-master .nav-tab.active .tab-icon {
   color: #94a3b8;
   margin-top: 2px;
 }
+
+/* ==========================================================================
+   🏛️ 국세청 사업자 등록상태 & 폐업 실시간 조회 모달 스타일
+   ========================================================================== */
+.header-btn-biz {
+  background: rgba(2, 132, 199, 0.2) !important;
+  border: 1px solid rgba(56, 189, 248, 0.4) !important;
+  color: #38bdf8 !important;
+  font-weight: 700 !important;
+}
+
+.header-btn-biz:hover {
+  background: rgba(2, 132, 199, 0.35) !important;
+  border-color: #38bdf8 !important;
+  color: #fff !important;
+}
+
+.map-pill-biz {
+  background: rgba(15, 23, 42, 0.92) !important;
+  border: 1px solid rgba(56, 189, 248, 0.5) !important;
+  color: #38bdf8 !important;
+  font-weight: 700 !important;
+}
+
+.map-pill-biz:hover {
+  background: rgba(2, 132, 199, 0.3) !important;
+  color: #ffffff !important;
+}
+
+.biz-tab-container {
+  display: flex;
+  background: rgba(0, 0, 0, 0.3);
+  border-radius: 10px;
+  padding: 4px;
+  margin-bottom: 14px;
+  gap: 4px;
+}
+
+.biz-tab-btn {
+  flex: 1;
+  padding: 8px 12px;
+  font-size: 12px;
+  font-weight: 700;
+  border-radius: 8px;
+  border: none;
+  background: transparent;
+  color: #94a3b8;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.biz-tab-btn.active {
+  background: #0284c7;
+  color: #ffffff;
+  box-shadow: 0 2px 8px rgba(2, 132, 199, 0.4);
+}
+
+.biz-input-box {
+  width: 100%;
+  padding: 12px 14px;
+  background: rgba(15, 23, 42, 0.8);
+  border: 1.5px solid rgba(255, 255, 255, 0.15);
+  border-radius: 10px;
+  color: #ffffff;
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  transition: all 0.2s ease;
+  box-sizing: border-box;
+}
+
+.biz-input-box:focus {
+  outline: none;
+  border-color: #38bdf8;
+  box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.2);
+}
+
+.biz-status-card {
+  border-radius: 12px;
+  padding: 16px;
+  margin-top: 14px;
+  animation: bizFadeUp 0.3s ease;
+}
+
+@keyframes bizFadeUp {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.biz-status-active {
+  background: linear-gradient(135deg, rgba(6, 78, 59, 0.85), rgba(4, 120, 87, 0.6));
+  border: 1.5px solid #10b981;
+}
+
+.biz-status-closed {
+  background: linear-gradient(135deg, rgba(69, 10, 10, 0.85), rgba(153, 27, 27, 0.6));
+  border: 1.5px solid #ef4444;
+}
+
+.biz-status-suspended {
+  background: linear-gradient(135deg, rgba(69, 26, 3, 0.85), rgba(180, 83, 9, 0.6));
+  border: 1.5px solid #f59e0b;
+}
+
+.biz-status-unknown {
+  background: linear-gradient(135deg, rgba(30, 41, 59, 0.85), rgba(51, 65, 85, 0.6));
+  border: 1.5px solid #64748b;
+}
+
+.biz-quick-chips {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  margin-top: 8px;
+}
+
+.biz-chip {
+  padding: 4px 9px;
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  color: #cbd5e1;
+  font-size: 11px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.biz-chip:hover {
+  background: rgba(56, 189, 248, 0.15);
+  border-color: #38bdf8;
+  color: #38bdf8;
+}
+
+.biz-table-container {
+  max-height: 280px;
+  overflow-y: auto;
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  margin-top: 10px;
+}
+
+.biz-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 11px;
+}
+
+.biz-table th {
+  background: rgba(15, 23, 42, 0.9);
+  padding: 8px 10px;
+  text-align: left;
+  color: #94a3b8;
+  font-weight: 700;
+  position: sticky;
+  top: 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.biz-table td {
+  padding: 8px 10px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  color: #f1f5f9;
+}

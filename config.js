@@ -186,12 +186,19 @@ const OpenRadarConfig = (function() {
     });
   });
 
+  // 🏛️ 국세청_사업자등록정보 진위확인 및 상태조회 공식 API 설정
+  const NTS_API_CONFIG = {
+    serviceKey: "14130ed23528ed357f222ef5f43b087401ff3e24e4de8f7332c69ae11aeff06e",
+    baseUrl: "https://api.odcloud.kr/api/nts-businessman/v1/status"
+  };
+
   return {
     COMPANY_INFO,
     TRIAL_CONFIG,
     PLAN_CATALOG,
     REGION_HIERARCHY,
-    FLAT_DISTRICT_COORDS
+    FLAT_DISTRICT_COORDS,
+    NTS_API_CONFIG
   };
 })();
 
